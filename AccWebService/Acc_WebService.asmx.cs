@@ -43,6 +43,7 @@ namespace AccWebService
             GBCVisaDetailAbateDetailDAO dao = new GBCVisaDetailAbateDetailDAO();
             GBCJSONRecordDAO jsonDAO = new GBCJSONRecordDAO();
             VouDetailDAO vouDetailDAO = new VouDetailDAO();
+            VouMainDAO vouMainDAO = new VouMainDAO();
 
             Vw_GBCVisaDetail vw_GBCVisaDetail = new Vw_GBCVisaDetail();
             List<Vw_GBCVisaDetail> vwList = new List<Vw_GBCVisaDetail>();
@@ -308,14 +309,15 @@ namespace AccWebService
                     string isVouNo1 = dao.IsVouNo1(vwListItem.基金代碼, vwListItem.PK_會計年度, vwListItem.PK_動支編號, vwListItem.PK_種類, vwListItem.PK_次別, vwListItem.PK_明細號);
                     string isPass = jsonDAO.IsPass(x => x.基金代碼 == vw_GBCVisaDetail.基金代碼 && x.PFK_會計年度 == vw_GBCVisaDetail.PK_會計年度 && x.PFK_動支編號 == vw_GBCVisaDetail.PK_動支編號 && x.PFK_種類 == vw_GBCVisaDetail.PK_種類 && x.PFK_次別 == vw_GBCVisaDetail.PK_次別);
 
-                    //if (isPass.Equals("error"))
-                    //{
-                    //    return "此動支已開立完畢， 傳票號碼為： " + isVouNo1;
-                    //}
-
                     if (isVouNo1 != null && isPass == "0")
                     {
-                        return jsonDAO.FindJSON2(x => x.基金代碼 == vw_GBCVisaDetail.基金代碼 && x.PFK_會計年度 == vw_GBCVisaDetail.PK_會計年度 && x.PFK_動支編號 == vw_GBCVisaDetail.PK_動支編號 && x.PFK_種類 == vw_GBCVisaDetail.PK_種類 && x.PFK_次別 == vw_GBCVisaDetail.PK_次別);
+                        string json2 = jsonDAO.FindJSON2(x => x.基金代碼 == vw_GBCVisaDetail.基金代碼 && x.PFK_會計年度 == vw_GBCVisaDetail.PK_會計年度 && x.PFK_動支編號 == vw_GBCVisaDetail.PK_動支編號 && x.PFK_種類 == vw_GBCVisaDetail.PK_種類 && x.PFK_次別 == vw_GBCVisaDetail.PK_次別);
+                        if (json2 == "")
+                        {
+                            jsonDAO.UpdatePassFlg(vw_GBCVisaDetail.基金代碼, vw_GBCVisaDetail.PK_會計年度, vw_GBCVisaDetail.PK_動支編號, vw_GBCVisaDetail.PK_種類, vw_GBCVisaDetail.PK_次別);
+                            return "此動支已開立完畢， 傳票號碼為： " + isVouNo1;
+                        }
+                        return json2;
                     }
 
                     if (vw_GBCVisaDetail.實支 > 0)
@@ -490,6 +492,40 @@ namespace AccWebService
                                 return e.Message;
                             }
 
+                            double preAmount = 0;
+                            double preAmount_tot = 0;
+                            double abatAmount_tot = 0;
+                            string abatePreVouNo = "";
+
+                            var prepayList = dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == vw_GBCVisaDetail.基金代碼 && x.PK_會計年度 == vw_GBCVisaDetail.PK_會計年度 && x.PK_動支編號 == vw_GBCVisaDetail.PK_動支編號 && x.PK_種類 =="預付" && x.F_受款人編號 == vw_GBCVisaDetail.F_受款人編號).OrderBy(x => x.F_製票日期1).ToList();
+                            //預付總額
+                            preAmount_tot = double.Parse((from s1 in prepayList select s1.F_核定金額).Sum().ToString());  
+
+                            //算已轉正金額
+                            foreach (var prepayListItem in prepayList)
+                            {
+                                string preVouYear = prepayListItem.F_傳票年度;
+                                string preVouNo = prepayListItem.F_傳票號1;
+                                string preVouDtlNo = prepayListItem.F_傳票明細號1.ToString();
+                                var tmpPreVoDetail = vouDetailDAO.GetVouDetail(x => x.FundNo == prepayListItem.基金代碼 && x.RelatedVouNo == preVouYear + "-" + preVouNo + "-" + preVouDtlNo && x.DC == "貸" && x.SubNo == "1154").ToList();
+                                
+                                var tmpAbatMoney = tmpPreVoDetail == null? 0 : (from m1 in tmpPreVoDetail select m1.Amount).Sum();
+                                abatAmount_tot = abatAmount_tot + double.Parse(tmpAbatMoney.ToString());
+                            }
+
+                            //判斷沖轉字號(預付明細疊加 - 已沖總額 是否大於等於本次報支金額，若true就帶本列預付傳票號)
+                            foreach (var prepayListItem in prepayList)
+                            {
+                                preAmount = preAmount + double.Parse(prepayListItem.F_核定金額.ToString());
+                                if (preAmount - abatAmount_tot >= vw_GBCVisaDetail.F_核定金額)
+                                {
+                                    abatePreVouNo = prepayListItem.PK_會計年度 + "-" + prepayListItem.F_傳票號1 + "-" + prepayListItem.F_傳票明細號1;
+                                }
+                            }
+
+                            
+
+
                             傳票明細 vouDtl_C = new 傳票明細()
                             {
                                 借貸別 = "貸",
@@ -500,7 +536,7 @@ namespace AccWebService
                                 計畫代碼 = vw_GBCVisaDetail.F_計畫代碼,
                                 用途別代碼 = vw_GBCVisaDetail.F_用途別代碼,
                                 //沖轉字號 = abatePrePayVouYear.ElementAt(abateCnt) + "-" + abatePrePayVouNo.ElementAt(abateCnt) + "-" + abatePrePayVouDtlNo.ElementAt(abateCnt),
-                                沖轉字號 = "",
+                                沖轉字號 = abatePreVouNo,
                                 對象代碼 = "",
                                 對象說明 = "",
                                 明細號 = vw_GBCVisaDetail.PK_明細號
@@ -525,6 +561,22 @@ namespace AccWebService
                             {
                                 vouDtl_D.科目代號 = "2125";
                                 vouDtl_D.科目名稱 = "應付費用";
+                                var estVouNo = dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == vw_GBCVisaDetail.基金代碼 && x.PK_會計年度 == vw_GBCVisaDetail.PK_會計年度 && x.PK_動支編號 == vw_GBCVisaDetail.PK_動支編號 && x.PK_種類 == "估列" && x.F_受款人編號 == vw_GBCVisaDetail.F_受款人編號).OrderBy(x => x.F_製票日期1).FirstOrDefault();
+
+                                if (estVouNo != null)
+                                {
+                                    string estVouYear = estVouNo.F_傳票年度;
+                                    string estVouMainNo = estVouNo.F_傳票號1;
+                                    string estVouDtlNo = estVouNo.F_傳票明細號1.ToString();
+                                    vouDtl_D.沖轉字號 = estVouYear + "-" + estVouMainNo + "-" + estVouDtlNo;
+                                }
+                                else
+                                {
+                                    vouDtl_D.沖轉字號 = "";
+                                }
+
+                                
+
                             }
 
                             vouDtlList.Add(vouDtl_D);
@@ -1605,7 +1657,6 @@ namespace AccWebService
                     return e.Message;
                 }
             }
-
 
             //return JsonConvert.SerializeObject(JSON1);
             return JSON1;
