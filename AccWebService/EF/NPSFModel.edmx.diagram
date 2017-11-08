@@ -4,7 +4,7 @@
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
-      <Diagram DiagramId="f7b6e27941b74d299cf7017e4bc48430" Name="Diagram1" ZoomLevel="71">
+      <Diagram DiagramId="f7b6e27941b74d299cf7017e4bc48430" Name="Diagram1" ZoomLevel="69">
         <EntityTypeShape EntityType="NPSFModel.Accounts_Categories" Width="1.5" PointX="0.75" PointY="0.75" IsExpanded="true" />
         <EntityTypeShape EntityType="NPSFModel.Accounts_FundMgr" Width="1.5" PointX="2.75" PointY="0.75" IsExpanded="true" />
         <EntityTypeShape EntityType="NPSFModel.Accounts_PermissionCategories" Width="1.5" PointX="4.75" PointY="0.75" IsExpanded="true" />

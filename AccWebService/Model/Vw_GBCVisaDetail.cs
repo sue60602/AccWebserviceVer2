@@ -29,5 +29,6 @@ namespace AccWebService.Model
         public double 實支;
         public double 預付轉正;
         public double 沖抵估列;
+        public double 費用;
     }
 }
