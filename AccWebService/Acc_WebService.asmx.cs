@@ -520,22 +520,26 @@ namespace AccWebService
 
                         vouDtlList.Add(vouDtl_D1);
 
-                        傳票明細 vouDtl_D2 = new 傳票明細()
-                        {
-                            借貸別 = "借",
-                            科目代號 = "5",
-                            科目名稱 = "基金用途",
-                            摘要 = vw_GBCVisaDetail.F_摘要,
-                            金額 = vw_GBCVisaDetail.費用,
-                            計畫代碼 = vw_GBCVisaDetail.F_計畫代碼,
-                            用途別代碼 = vw_GBCVisaDetail.F_用途別代碼,
-                            沖轉字號 = "",
-                            對象代碼 = vw_GBCVisaDetail.F_受款人編號,
-                            對象說明 = vw_GBCVisaDetail.F_受款人,
-                            明細號 = vw_GBCVisaDetail.PK_明細號
-                        };
+                        //是否開立第二列明細
+                        if (vw_GBCVisaDetail.費用 > 0)
+                        {                        
+                            傳票明細 vouDtl_D2 = new 傳票明細()
+                            {
+                                借貸別 = "借",
+                                科目代號 = "5",
+                                科目名稱 = "基金用途",
+                                摘要 = vw_GBCVisaDetail.F_摘要,
+                                金額 = vw_GBCVisaDetail.費用,
+                                計畫代碼 = vw_GBCVisaDetail.F_計畫代碼,
+                                用途別代碼 = vw_GBCVisaDetail.F_用途別代碼,
+                                沖轉字號 = "",
+                                對象代碼 = vw_GBCVisaDetail.F_受款人編號,
+                                對象說明 = vw_GBCVisaDetail.F_受款人,
+                                明細號 = vw_GBCVisaDetail.PK_明細號
+                            };
 
-                        vouDtlList.Add(vouDtl_D2);
+                            vouDtlList.Add(vouDtl_D2);
+                        }
 
                         傳票受款人 vouPay = new 傳票受款人()
                         {
