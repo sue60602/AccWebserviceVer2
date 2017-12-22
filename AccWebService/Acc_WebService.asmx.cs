@@ -192,6 +192,14 @@ namespace AccWebService
                         對象說明 = vw_GBCVisaDetail.F_受款人,
                         明細號 = vw_GBCVisaDetail.PK_明細號
                     };
+
+                    if (vw_GBCVisaDetail.F_計畫代碼 == "C1")
+                    {
+                        vouDtl_D.科目代號 = "1315";
+                        vouDtl_D.科目名稱 = "暫付及待結轉帳事項";
+                        vouDtl_D.用途別代碼 = "";
+                    }
+
                     vouDtlList.Add(vouDtl_D);
                     傳票受款人 vouPay = new 傳票受款人()
                     {
@@ -1873,7 +1881,7 @@ namespace AccWebService
             vouNoJSON = vouNoJSON.Replace(@"\r\n", ""); //清除\r\n              
             vouNoJSON = vouNoJSON.Replace(@"\", "");    //清除\        
             vouNoJSON = vouNoJSON.Replace(@"""[", "["); //將 "[  改為 [
-            vouNoJSON = vouNoJSON.Replace(@"]""", "]"); //將 ["  改為 ]
+            vouNoJSON = vouNoJSON.Replace(@"]""", "]"); //將 ]"  改為 ]
 
             //-------寫入Log------------------
             //jsonDAO.InsertJsonLog(fundNo, acmWordNum, vouNoJSON);
