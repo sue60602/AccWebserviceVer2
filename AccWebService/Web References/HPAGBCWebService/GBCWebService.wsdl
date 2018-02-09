@@ -412,10 +412,10 @@
   </wsdl:binding>
   <wsdl:service name="GBCWebService">
     <wsdl:port name="GBCWebServiceSoap" binding="tns:GBCWebServiceSoap">
-      <soap:address location="http://59.125.117.100/DVGBCWebService/GBCWebService.asmx" />
+      <soap:address location="http://59.125.117.100/HPAGBCWebService/GBCWebService.asmx" />
     </wsdl:port>
     <wsdl:port name="GBCWebServiceSoap12" binding="tns:GBCWebServiceSoap12">
-      <soap12:address location="http://59.125.117.100/DVGBCWebService/GBCWebService.asmx" />
+      <soap12:address location="http://59.125.117.100/HPAGBCWebService/GBCWebService.asmx" />
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>

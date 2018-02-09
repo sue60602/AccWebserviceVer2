@@ -75,9 +75,10 @@ namespace AccWebService
                 GBCWebService.GBCWebService ws = new GBCWebService.GBCWebService();
                 JSONReturn = ws.GetVw_GBCVisaDetailJSON(acmWordNum); //呼叫預控的服務,取得此動支編號的view資料
             }
-            else if (fundNo == "040")//菸害****尚未加入服務參考****
+            else if (fundNo == "040")//菸害服務參考
             {
-
+                HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
+                JSONReturn = ws.GetVw_GBCVisaDetailJSON(acmWordNum);
             }
             else if (fundNo == "090")//家防服務參考
             {
@@ -198,6 +199,13 @@ namespace AccWebService
                         vouDtl_D.科目代號 = "1315";
                         vouDtl_D.科目名稱 = "暫付及待結轉帳事項";
                         vouDtl_D.用途別代碼 = "";
+                    }
+                    else if (vw_GBCVisaDetail.PK_會計年度 != vw_GBCVisaDetail.PK_動支編號.Substring(0,3))
+                    {
+                        //預付以前年度，改從YearlyOffset表取計畫科目
+                        vouDtl_D.計畫代碼 = "";
+                        vouDtl_D.用途別代碼 = "";
+                        vouDtl_D.沖轉字號 = acmWordNum;
                     }
 
                     vouDtlList.Add(vouDtl_D);
@@ -1398,7 +1406,8 @@ namespace AccWebService
                         金額 = vw_GBCVisaDetail.F_核定金額,
                         計畫代碼 = vw_GBCVisaDetail.F_計畫代碼,
                         用途別代碼 = vw_GBCVisaDetail.F_用途別代碼,
-                        沖轉字號 = abateEstimateVouYear + "-" + abateEstimateVouNo.ElementAt(abateCnt) + "-" + abateEstimateVouDtlNo.ElementAt(abateCnt),
+                        //沖轉字號 = abateEstimateVouYear + "-" + abateEstimateVouNo.ElementAt(abateCnt) + "-" + abateEstimateVouDtlNo.ElementAt(abateCnt),
+                        沖轉字號 = "",
                         對象代碼 = vw_GBCVisaDetail.F_受款人編號,
                         對象說明 = vw_GBCVisaDetail.F_受款人,
                         明細號 = vw_GBCVisaDetail.PK_明細號
@@ -2286,14 +2295,14 @@ namespace AccWebService
         /// <param name="accCount"></param>
         /// <param name="accDetail"></param>
         /// <returns></returns>
-        public string GetByPrimaryKey(string fundNo, string accYear, string acmWordNum, string accKind, string accCount, string accDetail)
+        public string GetByPrimaryKey(string fundNo, string accYear, string acmWordNum, string accKind, string accCount)
         {
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateServerCertificate);
             //先判斷基金代號
             if (fundNo == "010")//醫發服務參考
             {
                 GBCWebService.GBCWebService ws = new GBCWebService.GBCWebService();
-                string getGBCVisaDetail = ws.GetByPrimaryKey(accYear, acmWordNum, accKind, accCount, accDetail);
+                string getGBCVisaDetail = ws.GetByPrimaryKey(accYear, acmWordNum, accKind, accCount);
                 return getGBCVisaDetail;
             }
             else if (fundNo == "040")//菸害****尚未加入服務參考****
@@ -2303,19 +2312,19 @@ namespace AccWebService
             else if (fundNo == "090")//家防服務參考
             {
                 DVGBCWebService.GBCWebService ws = new DVGBCWebService.GBCWebService();
-                string getGBCVisaDetail = ws.GetByPrimaryKey(accYear, acmWordNum, accKind, accCount, accDetail);
+                string getGBCVisaDetail = ws.GetByPrimaryKey(accYear, acmWordNum, accKind, accCount);
                 return getGBCVisaDetail;
             }
             else if (fundNo == "100")//長照****尚未加入服務參考****
             {
                 LCGBCWebService.GBCWebService ws = new LCGBCWebService.GBCWebService();
-                string getGBCVisaDetail = ws.GetByPrimaryKey(accYear, acmWordNum, accKind, accCount, accDetail);
+                string getGBCVisaDetail = ws.GetByPrimaryKey(accYear, acmWordNum, accKind, accCount);
                 return getGBCVisaDetail;
             }
             else if (fundNo == "110")//生產****尚未加入服務參考****
             {
                 BAGBCWebService.GBCWebService ws = new BAGBCWebService.GBCWebService();
-                string getGBCVisaDetail = ws.GetByPrimaryKey(accYear, acmWordNum, accKind, accCount, accDetail);
+                string getGBCVisaDetail = ws.GetByPrimaryKey(accYear, acmWordNum, accKind, accCount);
                 return getGBCVisaDetail;
             }
             else
@@ -2369,26 +2378,41 @@ namespace AccWebService
             else if (fundNo == "090")//家防服務參考
             {
                 DVGBCWebService.GBCWebService ws = new DVGBCWebService.GBCWebService();
-                List<string> accDetailList = new List<string>(
-                            ws.GetByKind(accYear, accKind, batch));
+                List<string> accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch));
+                List<string> resultList = new List<string>();
 
-                return accDetailList;
+                foreach (var accDetailListItem in accDetailList)
+                {
+                    resultList.Add(GetVw_GBCVisaDetail(fundNo, accDetailListItem));
+                }
+
+                return resultList;
             }
             else if (fundNo == "100")//長照****尚未加入服務參考****
             {
                 LCGBCWebService.GBCWebService ws = new LCGBCWebService.GBCWebService();
-                List<string> accDetailList = new List<string>(
-                            ws.GetByKind(accYear, accKind, batch));
+                List<string> accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch));
+                List<string> resultList = new List<string>();
 
-                return accDetailList;
+                foreach (var accDetailListItem in accDetailList)
+                {
+                    resultList.Add(GetVw_GBCVisaDetail(fundNo, accDetailListItem));
+                }
+
+                return resultList;
             }
             else if (fundNo == "110")//生產****尚未加入服務參考****
             {
                 BAGBCWebService.GBCWebService ws = new BAGBCWebService.GBCWebService();
-                List<string> accDetailList = new List<string>(
-                            ws.GetByKind(accYear, accKind, batch));
+                List<string> accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch));
+                List<string> resultList = new List<string>();
 
-                return accDetailList;
+                foreach (var accDetailListItem in accDetailList)
+                {
+                    resultList.Add(GetVw_GBCVisaDetail(fundNo, accDetailListItem));
+                }
+
+                return resultList;
             }
             else
             {

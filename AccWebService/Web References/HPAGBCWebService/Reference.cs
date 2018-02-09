@@ -13,7 +13,7 @@
 // 
 #pragma warning disable 1591
 
-namespace AccWebService.DVGBCWebService {
+namespace AccWebService.HPAGBCWebService {
     using System;
     using System.Web.Services;
     using System.Diagnostics;
@@ -51,7 +51,7 @@ namespace AccWebService.DVGBCWebService {
         
         /// <remarks/>
         public GBCWebService() {
-            this.Url = global::AccWebService.Properties.Settings.Default.AccWebService_DVGBCWebService_GBCWebService;
+            this.Url = global::AccWebService.Properties.Settings.Default.AccWebService_HPAGBCWebService_GBCWebService;
             if ((this.IsLocalFileSystemWebService(this.Url) == true)) {
                 this.UseDefaultCredentials = true;
                 this.useDefaultCredentialsSetExplicitly = false;

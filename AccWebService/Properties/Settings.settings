@@ -14,5 +14,8 @@
     <Setting Name="AccWebService_LCGBCWebService_GBCWebService" Type="(Web Service URL)" Scope="Application">
       <Value Profile="(Default)">http://59.125.117.100/LCGBCWebService/GBCWebService.asmx</Value>
     </Setting>
+    <Setting Name="AccWebService_HPAGBCWebService_GBCWebService" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">http://59.125.117.100/HPAGBCWebService/GBCWebService.asmx</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
