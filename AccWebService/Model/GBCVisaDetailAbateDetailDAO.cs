@@ -114,9 +114,9 @@ namespace AccWebService.Model
 
             //以插入方式更新
             getOne.F_傳票年度 = gbcVisaDetailAbateDetail.F_傳票年度;
-            getOne.F_傳票號2 = gbcVisaDetailAbateDetail.F_傳票號2;
-            getOne.F_傳票明細號2 = gbcVisaDetailAbateDetail.F_傳票明細號2;
-            getOne.F_製票日期2 = gbcVisaDetailAbateDetail.F_製票日期2;
+            getOne.F_傳票號2 = gbcVisaDetailAbateDetail.F_傳票號1;
+            getOne.F_傳票明細號2 = gbcVisaDetailAbateDetail.F_傳票明細號1;
+            getOne.F_製票日期2 = gbcVisaDetailAbateDetail.F_製票日期1;
 
             db.GBCVisaDetailAbateDetail.Add(getOne);
             db.SaveChanges();

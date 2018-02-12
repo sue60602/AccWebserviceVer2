@@ -785,15 +785,11 @@
           <Property Name="傳票JSON2" Type="nvarchar(max)" />
           <Property Name="是否結案" Type="varchar" MaxLength="1" />
         </EntityType>
-        <!--產生期間發現錯誤:
-警告 6002: 資料表/檢視 'NPSF.dbo.GBCJSONRecordLog' 未定義主索引鍵。已推斷此索引鍵，並將定義建立成唯讀的資料表/檢視。-->
         <EntityType Name="GBCJSONRecordLog">
           <Key>
-            <PropertyRef Name="基金代碼" />
-            <PropertyRef Name="條碼" />
-            <PropertyRef Name="JSON紀錄" />
-            <PropertyRef Name="接收時間" />
+            <PropertyRef Name="systemNo" />
           </Key>
+          <Property Name="systemNo" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="基金代碼" Type="varchar" MaxLength="3" Nullable="false" />
           <Property Name="條碼" Type="varchar" MaxLength="20" Nullable="false" />
           <Property Name="JSON紀錄" Type="nvarchar(max)" Nullable="false" />
@@ -2226,6 +2222,7 @@
           <EntitySet Name="FixedItemMain" EntityType="Self.FixedItemMain" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="FundsInfo" EntityType="Self.FundsInfo" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="GBCJSONRecord" EntityType="Self.GBCJSONRecord" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="GBCJSONRecordLog" EntityType="Self.GBCJSONRecordLog" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="GBCRecord" EntityType="Self.GBCRecord" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="GBCVisaDetailAbateDetail" EntityType="Self.GBCVisaDetailAbateDetail" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="HalfYearlyAccumulateMain" EntityType="Self.HalfYearlyAccumulateMain" Schema="dbo" store:Type="Tables" />
@@ -2317,14 +2314,6 @@
           <EntitySet Name="YearlyPurchasePropertyEstimation" EntityType="Self.YearlyPurchasePropertyEstimation" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="YearlySubjectBudget" EntityType="Self.YearlySubjectBudget" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="YearlySubjectEstimation" EntityType="Self.YearlySubjectEstimation" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="GBCJSONRecordLog" EntityType="Self.GBCJSONRecordLog" store:Type="Tables" store:Schema="dbo">
-            <DefiningQuery>SELECT 
-[GBCJSONRecordLog].[基金代碼] AS [基金代碼], 
-[GBCJSONRecordLog].[條碼] AS [條碼], 
-[GBCJSONRecordLog].[JSON紀錄] AS [JSON紀錄], 
-[GBCJSONRecordLog].[接收時間] AS [接收時間]
-FROM [dbo].[GBCJSONRecordLog] AS [GBCJSONRecordLog]</DefiningQuery>
-          </EntitySet>
         </EntityContainer>
       </Schema></edmx:StorageModels>
     <!-- CSDL content -->
@@ -4473,18 +4462,6 @@ FROM [dbo].[GBCJSONRecordLog] AS [GBCJSONRecordLog]</DefiningQuery>
           <Property Name="SubjectEstimation_01" Type="Int64" />
           <Property Name="SubjectEstimation_02" Type="Int64" />
         </EntityType>
-        <EntityType Name="GBCJSONRecordLog">
-          <Key>
-            <PropertyRef Name="基金代碼" />
-            <PropertyRef Name="條碼" />
-            <PropertyRef Name="JSON紀錄" />
-            <PropertyRef Name="接收時間" />
-          </Key>
-          <Property Name="基金代碼" Type="String" MaxLength="3" FixedLength="false" Unicode="false" Nullable="false" />
-          <Property Name="條碼" Type="String" MaxLength="20" FixedLength="false" Unicode="false" Nullable="false" />
-          <Property Name="JSON紀錄" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
-          <Property Name="接收時間" Type="DateTime" Nullable="false" Precision="3" />
-        </EntityType>
         <EntityContainer Name="NPSFEntities" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="Accounts_Categories" EntityType="Self.Accounts_Categories" />
           <EntitySet Name="Accounts_FundMgr" EntityType="Self.Accounts_FundMgr" />
@@ -4640,8 +4617,18 @@ FROM [dbo].[GBCJSONRecordLog] AS [GBCJSONRecordLog]</DefiningQuery>
           <EntitySet Name="YearlyPurchasePropertyEstimation" EntityType="Self.YearlyPurchasePropertyEstimation" />
           <EntitySet Name="YearlySubjectBudget" EntityType="Self.YearlySubjectBudget" />
           <EntitySet Name="YearlySubjectEstimation" EntityType="Self.YearlySubjectEstimation" />
-          <EntitySet Name="GBCJSONRecordLog" EntityType="Self.GBCJSONRecordLog" />
+          <EntitySet Name="GBCJSONRecordLog" EntityType="NPSFModel.GBCJSONRecordLog" />
         </EntityContainer>
+        <EntityType Name="GBCJSONRecordLog">
+          <Key>
+            <PropertyRef Name="systemNo" />
+          </Key>
+          <Property Name="systemNo" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="基金代碼" Type="String" Nullable="false" MaxLength="3" FixedLength="false" Unicode="false" />
+          <Property Name="條碼" Type="String" Nullable="false" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="JSON紀錄" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="接收時間" Type="DateTime" Nullable="false" Precision="3" />
+        </EntityType>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -6649,10 +6636,11 @@ FROM [dbo].[GBCJSONRecordLog] AS [GBCJSONRecordLog]</DefiningQuery>
           <EntitySetMapping Name="GBCJSONRecordLog">
             <EntityTypeMapping TypeName="NPSFModel.GBCJSONRecordLog">
               <MappingFragment StoreEntitySet="GBCJSONRecordLog">
-                <ScalarProperty Name="基金代碼" ColumnName="基金代碼" />
-                <ScalarProperty Name="條碼" ColumnName="條碼" />
-                <ScalarProperty Name="JSON紀錄" ColumnName="JSON紀錄" />
                 <ScalarProperty Name="接收時間" ColumnName="接收時間" />
+                <ScalarProperty Name="JSON紀錄" ColumnName="JSON紀錄" />
+                <ScalarProperty Name="條碼" ColumnName="條碼" />
+                <ScalarProperty Name="基金代碼" ColumnName="基金代碼" />
+                <ScalarProperty Name="systemNo" ColumnName="systemNo" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

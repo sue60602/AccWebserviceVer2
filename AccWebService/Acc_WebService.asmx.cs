@@ -417,6 +417,17 @@ namespace AccWebService
                         {
                             vouDtl_D.用途別代碼 = "91Y";
                         }
+
+                        //是否為沖轉以前年度
+                        if (vouDtl_D.沖轉字號 != "")
+                        {
+                            if (int.Parse(vouDtl_D.沖轉字號.Substring(0, 3)) < (DateTime.Now.Year - 1911))
+                            {
+                                vouDtl_D.計畫代碼 = "";
+                                vouDtl_D.用途別代碼 = "";
+                            }
+                        }
+
                         vouDtlList.Add(vouDtl_D);
                         傳票受款人 vouPay = new 傳票受款人()
                         {
@@ -718,6 +729,16 @@ namespace AccWebService
                                 明細號 = vw_GBCVisaDetail.PK_明細號
                             };
 
+                            //是否為沖轉以前年度
+                            if (vouDtl_D.沖轉字號 != "")
+                            {
+                                if (int.Parse(vouDtl_D.沖轉字號.Substring(0, 3)) < (DateTime.Now.Year - 1911))
+                                {
+                                    vouDtl_D.計畫代碼 = "";
+                                    vouDtl_D.用途別代碼 = "";
+                                }
+                            }
+
                             if (isEst)
                             {
                                 vouDtl_C.金額 = vw_GBCVisaDetail.預付轉正 - vw_GBCVisaDetail.費用;
@@ -740,6 +761,17 @@ namespace AccWebService
                                 }
                                 
                             }
+
+                            //是否為沖轉以前年度
+                            if (vouDtl_C.沖轉字號 != "")
+                            {
+                                if (int.Parse(vouDtl_C.沖轉字號.Substring(0, 3)) < (DateTime.Now.Year - 1911))
+                                {
+                                    vouDtl_C.計畫代碼 = "";
+                                    vouDtl_C.用途別代碼 = "";
+                                }
+                            }
+
                             vouDtlList.Add(vouDtl_C);
                             vouDtlList.Add(vouDtl_D);
 
@@ -761,6 +793,17 @@ namespace AccWebService
                                     對象說明 = "",
                                     明細號 = vw_GBCVisaDetail.PK_明細號
                                 };
+
+                                //是否為沖轉以前年度
+                                if (vouDtl_C.沖轉字號 != "")
+                                {
+                                    if (int.Parse(vouDtl_C.沖轉字號.Substring(0, 3)) < (DateTime.Now.Year - 1911))
+                                    {
+                                        vouDtl_C.計畫代碼 = "";
+                                        vouDtl_C.用途別代碼 = "";
+                                    }
+                                }
+
                                 vouDtlList.Add(vouDtl_C);
 
                                 vouDtl_D = new 傳票明細()
@@ -1588,6 +1631,17 @@ namespace AccWebService
                         對象說明 = vw_GBCVisaDetail.F_受款人,
                         明細號 = vw_GBCVisaDetail.PK_明細號
                     };
+
+                    //是否為沖轉以前年度
+                    if (vouDtl_C.沖轉字號 != "")
+                    {
+                        if (int.Parse(vouDtl_C.沖轉字號.Substring(0, 3)) < (DateTime.Now.Year - 1911))
+                        {
+                            vouDtl_C.計畫代碼 = "";
+                            vouDtl_C.用途別代碼 = "";
+                        }
+                    }
+
                     vouDtlList.Add(vouDtl_C);
 
                     傳票受款人 vouPay = new 傳票受款人()
@@ -1893,7 +1947,7 @@ namespace AccWebService
             vouNoJSON = vouNoJSON.Replace(@"]""", "]"); //將 ]"  改為 ]
 
             //-------寫入Log------------------
-            //jsonDAO.InsertJsonLog(fundNo, acmWordNum, vouNoJSON);
+            jsonDAO.InsertJsonLog(fundNo, acmWordNum, vouNoJSON);
             //--------------------------------
 
             try
@@ -2004,7 +2058,8 @@ namespace AccWebService
                     }
                     else if (gbcVisaDetailAbateDetail.基金代碼 == "040")//菸害****尚未加入服務參考****
                     {
-
+                        HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
+                        ws.FillVouNo(gbcVisaDetailAbateDetail.PK_會計年度, gbcVisaDetailAbateDetail.PK_動支編號, gbcVisaDetailAbateDetail.PK_種類, gbcVisaDetailAbateDetail.PK_次別, gbcVisaDetailAbateDetail.PK_明細號, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1);
                     }
                     else if (gbcVisaDetailAbateDetail.基金代碼 == "090")//家防服務參考
                     {
@@ -2050,7 +2105,10 @@ namespace AccWebService
             }
             else if (fundNo == "040")//菸害****尚未加入服務參考****
             {
-                return null;
+                HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
+                List<string> yearList = new List<string>(ws.GetYear());
+
+                return yearList;
             }
             else if (fundNo == "090")//家防服務參考
             {
@@ -2100,7 +2158,11 @@ namespace AccWebService
             }
             else if (fundNo == "040")//菸害****尚未加入服務參考****
             {
-                return null;
+                HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
+                List<string> acmNoList = new List<string>(
+                    ws.GetAcmWordNum(accYear));
+
+                return acmNoList;
             }
             else if (fundNo == "090")//家防服務參考
             {
@@ -2152,7 +2214,10 @@ namespace AccWebService
             }
             else if (fundNo == "040")//菸害****尚未加入服務參考****
             {
-                return null;
+                HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
+                List<string> accKindList = new List<string>(
+                    ws.GetAccKind(accYear, acmWordNum));
+                return accKindList;
             }
             else if (fundNo == "090")//家防服務參考
             {
@@ -2203,7 +2268,10 @@ namespace AccWebService
             }
             else if (fundNo == "040")//菸害****尚未加入服務參考****
             {
-                return null;
+                HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
+                List<string> accDetailList = new List<string>(
+                    ws.GetAccCount(accYear, acmWordNum, accKind));
+                return accDetailList;
             }
             else if (fundNo == "090")//家防服務參考
             {
@@ -2255,7 +2323,10 @@ namespace AccWebService
             }
             else if (fundNo == "040")//菸害****尚未加入服務參考****
             {
-                return null;
+                HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
+                List<string> accDetailList = new List<string>(
+                    ws.GetAccDetail(accYear, acmWordNum, accKind, accCount));
+                return accDetailList;
             }
             else if (fundNo == "090")//家防服務參考
             {
@@ -2307,7 +2378,9 @@ namespace AccWebService
             }
             else if (fundNo == "040")//菸害****尚未加入服務參考****
             {
-                return null;
+                HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
+                string getGBCVisaDetail = ws.GetByPrimaryKey(accYear, acmWordNum, accKind, accCount);
+                return getGBCVisaDetail;
             }
             else if (fundNo == "090")//家防服務參考
             {
@@ -2373,7 +2446,17 @@ namespace AccWebService
             }
             else if (fundNo == "040")//菸害****尚未加入服務參考****
             {
-                return null;
+                HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
+
+                List<string> accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch));
+                List<string> resultList = new List<string>();
+
+                foreach (var accDetailListItem in accDetailList)
+                {
+                    resultList.Add(GetVw_GBCVisaDetail(fundNo, accDetailListItem));
+                }
+
+                return resultList;
             }
             else if (fundNo == "090")//家防服務參考
             {

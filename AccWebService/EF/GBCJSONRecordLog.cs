@@ -14,6 +14,7 @@ namespace AccWebService.EF
     
     public partial class GBCJSONRecordLog
     {
+        public int systemNo { get; set; }
         public string 基金代碼 { get; set; }
         public string 條碼 { get; set; }
         public string JSON紀錄 { get; set; }
