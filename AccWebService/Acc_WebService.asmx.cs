@@ -130,6 +130,7 @@ namespace AccWebService
              * 1.預付    、2.核銷    、3.估列、
              * 4.估列收回、5.預撥收回、6.核銷收回
              */
+
             #region 預付
             if ("預付".Equals(accKind))
             {
@@ -416,6 +417,7 @@ namespace AccWebService
                         if (int.Parse(vw_GBCVisaDetail.PK_動支編號.Substring(0, 3)) < int.Parse(vw_GBCVisaDetail.PK_會計年度))
                         {
                             vouDtl_D.用途別代碼 = "91Y";
+
                         }
 
                         //是否為沖轉以前年度
@@ -729,6 +731,15 @@ namespace AccWebService
                                 明細號 = vw_GBCVisaDetail.PK_明細號
                             };
 
+                            if (int.Parse(vw_GBCVisaDetail.PK_動支編號.Substring(0, 3)) < (DateTime.Now.Year - 1911))
+                            {
+                                vouDtl_D.計畫代碼 = "";
+                                vouDtl_D.用途別代碼 = "";
+                                vouDtl_C.計畫代碼 = "";
+                                vouDtl_C.用途別代碼 = "";
+
+                            }
+
                             //是否為沖轉以前年度
                             if (vouDtl_D.沖轉字號 != "")
                             {
@@ -736,6 +747,8 @@ namespace AccWebService
                                 {
                                     vouDtl_D.計畫代碼 = "";
                                     vouDtl_D.用途別代碼 = "";
+                                    vouDtl_C.計畫代碼 = "";
+                                    vouDtl_C.用途別代碼 = "";
                                 }
                             }
 
@@ -762,6 +775,15 @@ namespace AccWebService
                                 
                             }
 
+                            if (int.Parse(vw_GBCVisaDetail.PK_動支編號.Substring(0, 3)) < (DateTime.Now.Year - 1911))
+                            {
+                                vouDtl_C.計畫代碼 = "";
+                                vouDtl_C.用途別代碼 = "";
+                                vouDtl_D.計畫代碼 = "";
+                                vouDtl_D.用途別代碼 = "";
+
+                            }
+
                             //是否為沖轉以前年度
                             if (vouDtl_C.沖轉字號 != "")
                             {
@@ -769,6 +791,8 @@ namespace AccWebService
                                 {
                                     vouDtl_C.計畫代碼 = "";
                                     vouDtl_C.用途別代碼 = "";
+                                    vouDtl_D.計畫代碼 = "";
+                                    vouDtl_D.用途別代碼 = "";
                                 }
                             }
 
@@ -793,6 +817,13 @@ namespace AccWebService
                                     對象說明 = "",
                                     明細號 = vw_GBCVisaDetail.PK_明細號
                                 };
+
+                                if (int.Parse(vw_GBCVisaDetail.PK_動支編號.Substring(0, 3)) < (DateTime.Now.Year - 1911))
+                                {
+                                    vouDtl_C.計畫代碼 = "";
+                                    vouDtl_C.用途別代碼 = "";
+
+                                }
 
                                 //是否為沖轉以前年度
                                 if (vouDtl_C.沖轉字號 != "")
@@ -906,6 +937,12 @@ namespace AccWebService
                                     對象說明 = "",
                                     明細號 = vw_GBCVisaDetail.PK_明細號
                                 };
+                                if (int.Parse(vw_GBCVisaDetail.PK_動支編號.Substring(0, 3)) < (DateTime.Now.Year - 1911))
+                                {
+                                    vouDtl_C.計畫代碼 = "";
+                                    vouDtl_C.用途別代碼 = "";
+
+                                }
                                 vouDtlList.Add(vouDtl_C);
                                 傳票明細 vouDtl_D = new 傳票明細()
                                 {
@@ -922,6 +959,12 @@ namespace AccWebService
                                     對象說明 = vw_GBCVisaDetail.F_受款人,
                                     明細號 = vw_GBCVisaDetail.PK_明細號
                                 };
+                                if (int.Parse(vw_GBCVisaDetail.PK_動支編號.Substring(0, 3)) < (DateTime.Now.Year - 1911))
+                                {
+                                    vouDtl_D.計畫代碼 = "";
+                                    vouDtl_D.用途別代碼 = "";
+
+                                }
                                 vouDtlList.Add(vouDtl_D);
                                 傳票受款人 vouPay = new 傳票受款人()
                                 {
@@ -944,7 +987,56 @@ namespace AccWebService
                                 };
                                 vouPayList.Add(vouPay);
 
-                                vouMain.傳票種類 = "4";
+                                if (fundNo == "040")
+                                {
+                                    vouDtl_D = new 傳票明細();
+                                    vouDtl_D.借貸別 = "借";
+                                    vouDtl_D.科目代號 = "5";
+                                    vouDtl_D.科目名稱 = "基金用途";
+                                    vouDtl_D.摘要 = vw_GBCVisaDetail.F_摘要;
+                                    vouDtl_D.金額 = vw_GBCVisaDetail.實支;
+                                    vouDtl_D.計畫代碼 = vw_GBCVisaDetail.F_計畫代碼;
+                                    vouDtl_D.用途別代碼 = vw_GBCVisaDetail.F_用途別代碼;
+                                    vouDtl_D.沖轉字號 = "";
+                                    vouDtl_D.對象代碼 = vw_GBCVisaDetail.F_受款人編號;
+                                    vouDtl_D.對象說明 = vw_GBCVisaDetail.F_受款人;
+                                    vouDtl_D.明細號 = vw_GBCVisaDetail.PK_明細號;
+
+                                    if (int.Parse(vw_GBCVisaDetail.PK_動支編號.Substring(0, 3)) < (DateTime.Now.Year - 1911))
+                                    {
+                                        vouDtl_D.計畫代碼 = "";
+                                        vouDtl_D.用途別代碼 = "";
+
+                                    }
+
+                                    vouDtlList.Add(vouDtl_D);
+
+                                    vouDtl_C = new 傳票明細();
+                                    vouDtl_C.借貸別 = "貸";
+                                    vouDtl_C.科目代號 = "11120104";
+                                    vouDtl_D.科目名稱 = "銀行存款";
+                                    vouDtl_C.摘要 = vw_GBCVisaDetail.F_摘要;
+                                    vouDtl_C.金額 = vw_GBCVisaDetail.實支;
+                                    vouDtl_C.計畫代碼 = "";
+                                    vouDtl_C.用途別代碼 = "";
+                                    vouDtl_C.沖轉字號 = "";
+                                    vouDtl_C.對象代碼 = "";
+                                    vouDtl_C.對象說明 = "";
+                                    vouDtl_C.明細號 = vw_GBCVisaDetail.PK_明細號;
+
+                                    if (int.Parse(vw_GBCVisaDetail.PK_動支編號.Substring(0, 3)) < (DateTime.Now.Year - 1911))
+                                    {
+                                        vouDtl_C.計畫代碼 = "";
+                                        vouDtl_C.用途別代碼 = "";
+
+                                    }
+
+                                    vouDtlList.Add(vouDtl_C);
+                                }
+
+                                //vouMain.傳票種類 = "4";
+                                //菸害基金不用開第二張傳票，統一開在現金轉帳傳票
+                                vouMain.傳票種類 = fundNo == "040" ? "3" : "4";
                                 vouMain.製票日期 = "";
                                 vouMain.主摘要 = vw_GBCVisaDetail.F_摘要;
                                 vouMain.交付方式 = "1";
@@ -962,84 +1054,93 @@ namespace AccWebService
                                 vouTop.明細號 = vw_GBCVisaDetail.PK_明細號;
                                 vouTop.傳票內容 = vouCollectionList;
 
-                                //------支出傳票------
-                                傳票明細 vouDtl_D2 = new 傳票明細()
+                                //------支出傳票，菸害基金不用額外加開支出傳票------
+                                if (fundNo != "040")
                                 {
-                                    借貸別 = "借",
-                                    科目代號 = "5",
-                                    科目名稱 = "基金用途",
-                                    摘要 = vw_GBCVisaDetail.F_摘要,
-                                    金額 = vw_GBCVisaDetail.實支,
-                                    計畫代碼 = vw_GBCVisaDetail.F_計畫代碼,
-                                    用途別代碼 = vw_GBCVisaDetail.F_用途別代碼,
-                                    沖轉字號 = "",
-                                    對象代碼 = vw_GBCVisaDetail.F_受款人編號,
-                                    對象說明 = vw_GBCVisaDetail.F_受款人,
-                                    明細號 = vw_GBCVisaDetail.PK_明細號
-                                };
-                                vouDtlList2.Add(vouDtl_D2);
-                                傳票受款人 vouPay2 = new 傳票受款人()
-                                {
-                                    //統一編號 = vw_GBCVisaDetail.F_受款人編號,
-                                    //受款人名稱 = vw_GBCVisaDetail.F_受款人,
-                                    //地址 = "",
-                                    //實付金額 = vw_GBCVisaDetail.F_核定金額 - prePayBalance,
-                                    //銀行代號 = "",
-                                    //銀行名稱 = "",
-                                    //銀行帳號 = "",
-                                    //帳戶名稱 = ""
-                                    統一編號 = "",
-                                    受款人名稱 = "",
-                                    地址 = "",
-                                    實付金額 = 0,
-                                    銀行代號 = "",
-                                    銀行名稱 = "",
-                                    銀行帳號 = "",
-                                    帳戶名稱 = ""
+                                    傳票明細 vouDtl_D2 = new 傳票明細()
+                                    {
+                                        借貸別 = "借",
+                                        科目代號 = "5",
+                                        科目名稱 = "基金用途",
+                                        摘要 = vw_GBCVisaDetail.F_摘要,
+                                        金額 = vw_GBCVisaDetail.實支,
+                                        計畫代碼 = vw_GBCVisaDetail.F_計畫代碼,
+                                        用途別代碼 = vw_GBCVisaDetail.F_用途別代碼,
+                                        沖轉字號 = "",
+                                        對象代碼 = vw_GBCVisaDetail.F_受款人編號,
+                                        對象說明 = vw_GBCVisaDetail.F_受款人,
+                                        明細號 = vw_GBCVisaDetail.PK_明細號
+                                    };
+                                    if (int.Parse(vw_GBCVisaDetail.PK_動支編號.Substring(0, 3)) < (DateTime.Now.Year - 1911))
+                                    {
+                                        vouDtl_D2.計畫代碼 = "";
+                                        vouDtl_D2.用途別代碼 = "";
 
-                                };
-                                vouPayList2.Add(vouPay2);
+                                    }
+                                    vouDtlList2.Add(vouDtl_D2);
+                                    傳票受款人 vouPay2 = new 傳票受款人()
+                                    {
+                                        //統一編號 = vw_GBCVisaDetail.F_受款人編號,
+                                        //受款人名稱 = vw_GBCVisaDetail.F_受款人,
+                                        //地址 = "",
+                                        //實付金額 = vw_GBCVisaDetail.F_核定金額 - prePayBalance,
+                                        //銀行代號 = "",
+                                        //銀行名稱 = "",
+                                        //銀行帳號 = "",
+                                        //帳戶名稱 = ""
+                                        統一編號 = "",
+                                        受款人名稱 = "",
+                                        地址 = "",
+                                        實付金額 = 0,
+                                        銀行代號 = "",
+                                        銀行名稱 = "",
+                                        銀行帳號 = "",
+                                        帳戶名稱 = ""
 
-                                傳票主檔 vouMain2 = new 傳票主檔()
-                                {
-                                    傳票種類 = PayVouKind,
-                                    製票日期 = "",
-                                    主摘要 = vw_GBCVisaDetail.F_摘要,
-                                    交付方式 = "1"
-                                };
-                                傳票明細 vouDtl_C2 = new 傳票明細()
-                                {
-                                    借貸別 = "貸",
-                                    科目代號 = "1112",
-                                    科目名稱 = "銀行存款",
-                                    摘要 = vw_GBCVisaDetail.F_摘要,
-                                    金額 = vw_GBCVisaDetail.實支,
-                                    計畫代碼 = "",
-                                    用途別代碼 = "",
-                                    沖轉字號 = "",
-                                    對象代碼 = "",
-                                    對象說明 = "",
-                                    明細號 = vw_GBCVisaDetail.PK_明細號
-                                };
-                                vouDtlList2.Add(vouDtl_C2);
-                                傳票內容 vouCollection2 = new 傳票內容()
-                                {
-                                    傳票主檔 = vouMain2,
-                                    傳票明細 = vouDtlList2,
-                                    傳票受款人 = vouPayList2
-                                };
-                                vouCollectionList2.Add(vouCollection2);
+                                    };
+                                    vouPayList2.Add(vouPay2);
 
-                                vouTop2 = new 最外層()
-                                {
-                                    基金代碼 = vw_GBCVisaDetail.基金代碼,
-                                    年度 = vw_GBCVisaDetail.PK_會計年度,
-                                    動支編號 = vw_GBCVisaDetail.PK_動支編號,
-                                    種類 = vw_GBCVisaDetail.PK_種類,
-                                    次別 = vw_GBCVisaDetail.PK_次別,
-                                    明細號 = vw_GBCVisaDetail.PK_明細號,
-                                    傳票內容 = vouCollectionList2
-                                };                                
+                                    傳票主檔 vouMain2 = new 傳票主檔()
+                                    {
+                                        傳票種類 = PayVouKind,
+                                        製票日期 = "",
+                                        主摘要 = vw_GBCVisaDetail.F_摘要,
+                                        交付方式 = "1"
+                                    };
+                                    傳票明細 vouDtl_C2 = new 傳票明細()
+                                    {
+                                        借貸別 = "貸",
+                                        科目代號 = "1112",
+                                        科目名稱 = "銀行存款",
+                                        摘要 = vw_GBCVisaDetail.F_摘要,
+                                        金額 = vw_GBCVisaDetail.實支,
+                                        計畫代碼 = "",
+                                        用途別代碼 = "",
+                                        沖轉字號 = "",
+                                        對象代碼 = "",
+                                        對象說明 = "",
+                                        明細號 = vw_GBCVisaDetail.PK_明細號
+                                    };
+                                    vouDtlList2.Add(vouDtl_C2);
+                                    傳票內容 vouCollection2 = new 傳票內容()
+                                    {
+                                        傳票主檔 = vouMain2,
+                                        傳票明細 = vouDtlList2,
+                                        傳票受款人 = vouPayList2
+                                    };
+                                    vouCollectionList2.Add(vouCollection2);
+
+                                    vouTop2 = new 最外層()
+                                    {
+                                        基金代碼 = vw_GBCVisaDetail.基金代碼,
+                                        年度 = vw_GBCVisaDetail.PK_會計年度,
+                                        動支編號 = vw_GBCVisaDetail.PK_動支編號,
+                                        種類 = vw_GBCVisaDetail.PK_種類,
+                                        次別 = vw_GBCVisaDetail.PK_次別,
+                                        明細號 = vw_GBCVisaDetail.PK_明細號,
+                                        傳票內容 = vouCollectionList2
+                                    };
+                                }                               
                             }
                             #endregion
 
@@ -1084,6 +1185,14 @@ namespace AccWebService
                                     對象說明 = "",
                                     明細號 = vw_GBCVisaDetail.PK_明細號
                                 };
+
+                                if (int.Parse(vw_GBCVisaDetail.PK_動支編號.Substring(0, 3)) < (DateTime.Now.Year - 1911))
+                                {
+                                    vouDtl_C.計畫代碼 = "";
+                                    vouDtl_C.用途別代碼 = "";
+
+                                }
+
                                 vouDtlList.Add(vouDtl_C);
                                 傳票明細 vouDtl_D = new 傳票明細()
                                 {
@@ -1100,6 +1209,14 @@ namespace AccWebService
                                     對象說明 = vw_GBCVisaDetail.F_受款人,
                                     明細號 = vw_GBCVisaDetail.PK_明細號
                                 };
+
+                                if (int.Parse(vw_GBCVisaDetail.PK_動支編號.Substring(0, 3)) < (DateTime.Now.Year - 1911))
+                                {
+                                    vouDtl_D.計畫代碼 = "";
+                                    vouDtl_D.用途別代碼 = "";
+
+                                }
+
                                 vouDtlList.Add(vouDtl_D);
 
                                 傳票受款人 vouPay = new 傳票受款人()
@@ -1123,7 +1240,49 @@ namespace AccWebService
                                 };
                                 vouPayList.Add(vouPay);
 
-                                vouMain.傳票種類 = "4";
+
+                                if (fundNo == "040")
+                                {
+                                    //借方
+                                    vouDtl_D = new 傳票明細();
+                                    vouDtl_D.借貸別 = "借";
+                                    vouDtl_D.科目代號 = "2125";
+                                    vouDtl_D.科目名稱 = "應付費用";
+                                    vouDtl_D.摘要 = vw_GBCVisaDetail.F_摘要;
+                                    vouDtl_D.金額 = vw_GBCVisaDetail.實支;
+                                    vouDtl_D.計畫代碼 = vw_GBCVisaDetail.F_計畫代碼;
+                                    vouDtl_D.用途別代碼 = vw_GBCVisaDetail.F_用途別代碼;
+                                    vouDtl_D.沖轉字號 = "";
+                                    vouDtl_D.對象代碼 = vw_GBCVisaDetail.F_受款人編號;
+                                    vouDtl_D.對象說明 = vw_GBCVisaDetail.F_受款人;
+                                    vouDtl_D.明細號 = vw_GBCVisaDetail.PK_明細號;
+                                    if (int.Parse(vw_GBCVisaDetail.PK_動支編號.Substring(0, 3)) < (DateTime.Now.Year - 1911))
+                                    {
+                                        vouDtl_D.計畫代碼 = "";
+                                        vouDtl_D.用途別代碼 = "";
+
+                                    }
+                                    vouDtlList.Add(vouDtl_D);
+
+                                    //貸方
+                                    vouDtl_C = new 傳票明細();
+                                    vouDtl_C.借貸別 = "貸";
+                                    vouDtl_C.科目代號 = "11120104";
+                                    vouDtl_D.科目名稱 = "銀行存款";
+                                    vouDtl_C.摘要 = vw_GBCVisaDetail.F_摘要;
+                                    vouDtl_C.金額 = vw_GBCVisaDetail.實支;
+                                    vouDtl_C.計畫代碼 = "";
+                                    vouDtl_C.用途別代碼 = "";
+                                    vouDtl_C.沖轉字號 = "";
+                                    vouDtl_C.對象代碼 = "";
+                                    vouDtl_C.對象說明 = "";
+                                    vouDtl_C.明細號 = vw_GBCVisaDetail.PK_明細號;
+                                    vouDtlList.Add(vouDtl_C);
+                                }
+
+                                //vouMain.傳票種類 = "4";
+                                //菸害基金不用開第二張傳票，統一開在現金轉帳傳票
+                                vouMain.傳票種類 = fundNo == "040" ? "3" : "4";
                                 vouMain.製票日期 = "";
                                 vouMain.主摘要 = vw_GBCVisaDetail.F_摘要;
                                 vouMain.交付方式 = "1";
@@ -1141,84 +1300,95 @@ namespace AccWebService
                                 vouTop.明細號 = vw_GBCVisaDetail.PK_明細號;
                                 vouTop.傳票內容 = vouCollectionList;
 
-                                //------支出傳票------
-                                傳票明細 vouDtl_D2 = new 傳票明細()
+                                //------支出傳票，菸害基金不用額外加開支出傳票------
+                                if (fundNo != "040")
                                 {
-                                    借貸別 = "借",
-                                    科目代號 = "2125",
-                                    科目名稱 = "應付費用",
-                                    摘要 = vw_GBCVisaDetail.F_摘要,
-                                    金額 = vw_GBCVisaDetail.實支,
-                                    計畫代碼 = vw_GBCVisaDetail.F_計畫代碼,
-                                    用途別代碼 = vw_GBCVisaDetail.F_用途別代碼,
-                                    沖轉字號 = "",
-                                    對象代碼 = vw_GBCVisaDetail.F_受款人編號,
-                                    對象說明 = vw_GBCVisaDetail.F_受款人,
-                                    明細號 = vw_GBCVisaDetail.PK_明細號
-                                };
-                                vouDtlList2.Add(vouDtl_D2);
-                                傳票受款人 vouPay2 = new 傳票受款人()
-                                {
-                                    //統一編號 = vw_GBCVisaDetail.F_受款人編號,
-                                    //受款人名稱 = vw_GBCVisaDetail.F_受款人,
-                                    //地址 = "",
-                                    //實付金額 = vw_GBCVisaDetail.F_核定金額 - prePayBalance,
-                                    //銀行代號 = "",
-                                    //銀行名稱 = "",
-                                    //銀行帳號 = "",
-                                    //帳戶名稱 = ""
-                                    統一編號 = "",
-                                    受款人名稱 = "",
-                                    地址 = "",
-                                    實付金額 = 0,
-                                    銀行代號 = "",
-                                    銀行名稱 = "",
-                                    銀行帳號 = "",
-                                    帳戶名稱 = ""
+                                    傳票明細 vouDtl_D2 = new 傳票明細()
+                                    {
+                                        借貸別 = "借",
+                                        科目代號 = "2125",
+                                        科目名稱 = "應付費用",
+                                        摘要 = vw_GBCVisaDetail.F_摘要,
+                                        金額 = vw_GBCVisaDetail.實支,
+                                        計畫代碼 = vw_GBCVisaDetail.F_計畫代碼,
+                                        用途別代碼 = vw_GBCVisaDetail.F_用途別代碼,
+                                        沖轉字號 = "",
+                                        對象代碼 = vw_GBCVisaDetail.F_受款人編號,
+                                        對象說明 = vw_GBCVisaDetail.F_受款人,
+                                        明細號 = vw_GBCVisaDetail.PK_明細號
+                                    };
 
-                                };
-                                vouPayList2.Add(vouPay2);
+                                    if (int.Parse(vw_GBCVisaDetail.PK_動支編號.Substring(0, 3)) < (DateTime.Now.Year - 1911))
+                                    {
+                                        vouDtl_D2.計畫代碼 = "";
+                                        vouDtl_D2.用途別代碼 = "";
 
-                                傳票主檔 vouMain2 = new 傳票主檔()
-                                {
-                                    傳票種類 = PayVouKind,
-                                    製票日期 = "",
-                                    主摘要 = vw_GBCVisaDetail.F_摘要,
-                                    交付方式 = "1"
-                                };
-                                傳票明細 vouDtl_C2 = new 傳票明細()
-                                {
-                                    借貸別 = "貸",
-                                    科目代號 = "1112",
-                                    科目名稱 = "銀行存款",
-                                    摘要 = vw_GBCVisaDetail.F_摘要,
-                                    金額 = vw_GBCVisaDetail.實支,
-                                    計畫代碼 = "",
-                                    用途別代碼 = "",
-                                    沖轉字號 = "",
-                                    對象代碼 = "",
-                                    對象說明 = "",
-                                    明細號 = vw_GBCVisaDetail.PK_明細號
-                                };
-                                vouDtlList2.Add(vouDtl_C2);
-                                傳票內容 vouCollection2 = new 傳票內容()
-                                {
-                                    傳票主檔 = vouMain2,
-                                    傳票明細 = vouDtlList2,
-                                    傳票受款人 = vouPayList2
-                                };
-                                vouCollectionList2.Add(vouCollection2);
+                                    }
 
-                                vouTop2 = new 最外層()
-                                {
-                                    基金代碼 = vw_GBCVisaDetail.基金代碼,
-                                    年度 = vw_GBCVisaDetail.PK_會計年度,
-                                    動支編號 = vw_GBCVisaDetail.PK_動支編號,
-                                    種類 = vw_GBCVisaDetail.PK_種類,
-                                    次別 = vw_GBCVisaDetail.PK_次別,
-                                    明細號 = vw_GBCVisaDetail.PK_明細號,
-                                    傳票內容 = vouCollectionList2
-                                };                               
+                                    vouDtlList2.Add(vouDtl_D2);
+                                    傳票受款人 vouPay2 = new 傳票受款人()
+                                    {
+                                        //統一編號 = vw_GBCVisaDetail.F_受款人編號,
+                                        //受款人名稱 = vw_GBCVisaDetail.F_受款人,
+                                        //地址 = "",
+                                        //實付金額 = vw_GBCVisaDetail.F_核定金額 - prePayBalance,
+                                        //銀行代號 = "",
+                                        //銀行名稱 = "",
+                                        //銀行帳號 = "",
+                                        //帳戶名稱 = ""
+                                        統一編號 = "",
+                                        受款人名稱 = "",
+                                        地址 = "",
+                                        實付金額 = 0,
+                                        銀行代號 = "",
+                                        銀行名稱 = "",
+                                        銀行帳號 = "",
+                                        帳戶名稱 = ""
+
+                                    };
+                                    vouPayList2.Add(vouPay2);
+
+                                    傳票主檔 vouMain2 = new 傳票主檔()
+                                    {
+                                        傳票種類 = PayVouKind,
+                                        製票日期 = "",
+                                        主摘要 = vw_GBCVisaDetail.F_摘要,
+                                        交付方式 = "1"
+                                    };
+                                    傳票明細 vouDtl_C2 = new 傳票明細()
+                                    {
+                                        借貸別 = "貸",
+                                        科目代號 = "1112",
+                                        科目名稱 = "銀行存款",
+                                        摘要 = vw_GBCVisaDetail.F_摘要,
+                                        金額 = vw_GBCVisaDetail.實支,
+                                        計畫代碼 = "",
+                                        用途別代碼 = "",
+                                        沖轉字號 = "",
+                                        對象代碼 = "",
+                                        對象說明 = "",
+                                        明細號 = vw_GBCVisaDetail.PK_明細號
+                                    };
+                                    vouDtlList2.Add(vouDtl_C2);
+                                    傳票內容 vouCollection2 = new 傳票內容()
+                                    {
+                                        傳票主檔 = vouMain2,
+                                        傳票明細 = vouDtlList2,
+                                        傳票受款人 = vouPayList2
+                                    };
+                                    vouCollectionList2.Add(vouCollection2);
+
+                                    vouTop2 = new 最外層()
+                                    {
+                                        基金代碼 = vw_GBCVisaDetail.基金代碼,
+                                        年度 = vw_GBCVisaDetail.PK_會計年度,
+                                        動支編號 = vw_GBCVisaDetail.PK_動支編號,
+                                        種類 = vw_GBCVisaDetail.PK_種類,
+                                        次別 = vw_GBCVisaDetail.PK_次別,
+                                        明細號 = vw_GBCVisaDetail.PK_明細號,
+                                        傳票內容 = vouCollectionList2
+                                    };
+                                }                               
                             }
                             #endregion
 
@@ -1632,6 +1802,14 @@ namespace AccWebService
                         明細號 = vw_GBCVisaDetail.PK_明細號
                     };
 
+                    //以前年度不要填入計畫科目
+                    if (int.Parse(vw_GBCVisaDetail.PK_動支編號.Substring(0, 3)) < (DateTime.Now.Year - 1911))
+                    {
+                        vouDtl_C.計畫代碼 = "";
+                        vouDtl_C.用途別代碼 = "";
+
+                    }
+
                     //是否為沖轉以前年度
                     if (vouDtl_C.沖轉字號 != "")
                     {
@@ -1795,6 +1973,13 @@ namespace AccWebService
                         對象說明 = vw_GBCVisaDetail.F_受款人,
                         明細號 = vw_GBCVisaDetail.PK_明細號
                     };
+
+                    if (int.Parse(vw_GBCVisaDetail.PK_動支編號.Substring(0, 3)) < (DateTime.Now.Year - 1911))
+                    {
+                        vouDtl_C.計畫代碼 = "";
+                        vouDtl_C.用途別代碼 = "";
+
+                    }
 
                     //是否為以前年度
                     if (int.Parse(vw_GBCVisaDetail.PK_動支編號.Substring(0, 3)) < int.Parse(vw_GBCVisaDetail.PK_會計年度))
