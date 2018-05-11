@@ -77,8 +77,9 @@ namespace AccWebService
             }
             else if (fundNo == "040")//菸害服務參考
             {
-                HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
-                JSONReturn = ws.GetVw_GBCVisaDetailJSON(acmWordNum);
+                HPAGBCWebService.HPAGBCWebService ws = new HPAGBCWebService.HPAGBCWebService();
+                string AccYear = (DateTime.Now.Year - 1911).ToString();
+                //JSONReturn = ws.GetSP_GBCVisaDetailJSON(AccYear,acmWordNum);
             }
             else if (fundNo == "090")//家防服務參考
             {
@@ -406,18 +407,20 @@ namespace AccWebService
                             vouDtl_D.用途別代碼 = "";
                         }
 
-                        //是否補貼息
-                        if (vw_GBCVisaDetail.F_計畫代碼.Substring(0, 2) == "01")
-                        {
-                            vouDtl_D.科目代號 = "2125";
-                            vouDtl_D.科目名稱 = "應付費用";
-                        }
+
 
                         //是否為以前年度
                         if (int.Parse(vw_GBCVisaDetail.PK_動支編號.Substring(0, 3)) < int.Parse(vw_GBCVisaDetail.PK_會計年度))
                         {
                             vouDtl_D.用途別代碼 = "91Y";
 
+                        }
+
+                        //是否補貼息
+                        if (vw_GBCVisaDetail.F_計畫代碼.Substring(0, 2) == "01")
+                        {
+                            vouDtl_D.科目代號 = "2125";
+                            vouDtl_D.科目名稱 = "應付費用";
                         }
 
                         //是否為沖轉以前年度
@@ -531,7 +534,7 @@ namespace AccWebService
                             摘要 = vw_GBCVisaDetail.F_摘要,
                             金額 = vw_GBCVisaDetail.沖抵估列,
                             計畫代碼 = vw_GBCVisaDetail.F_計畫代碼,
-                            用途別代碼 = vw_GBCVisaDetail.F_用途別代碼,
+                            用途別代碼 = "",
                             沖轉字號 = "",
                             對象代碼 = vw_GBCVisaDetail.F_受款人編號,
                             對象說明 = vw_GBCVisaDetail.F_受款人,
@@ -546,6 +549,11 @@ namespace AccWebService
                             string estVouMainNo = estVouNo.F_傳票號1;
                             string estVouDtlNo = estVouNo.F_傳票明細號1.ToString();
                             vouDtl_D1.沖轉字號 = estVouYear + "-" + estVouMainNo + "-" + estVouDtlNo;
+                            if (estVouYear != (DateTime.Now.Year - 1911).ToString())
+                            {
+                                vouDtl_D1.計畫代碼 = "";
+                                vouDtl_D1.用途別代碼 = "";
+                            }
                         }
                         else
                         {
@@ -767,6 +775,12 @@ namespace AccWebService
                                     string estVouMainNo = estVouNo.F_傳票號1;
                                     string estVouDtlNo = estVouNo.F_傳票明細號1.ToString();
                                     vouDtl_D.沖轉字號 = estVouYear + "-" + estVouMainNo + "-" + estVouDtlNo;
+
+                                    if (estVouYear != (DateTime.Now.Year - 1911).ToString())
+                                    {
+                                        vouDtl_D.計畫代碼 = "";
+                                        vouDtl_D.用途別代碼 = "";
+                                    }
                                 }
                                 else
                                 {
@@ -2103,6 +2117,1481 @@ namespace AccWebService
         }
 
         [WebMethod]
+        ///菸金用
+        public string GetSP_HPAGBCVisaDetail(string fundNo,string accYear, string acmWordNum, string AccType)
+        {
+            ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateServerCertificate);
+            GBCVisaDetailAbateDetailDAO dao = new GBCVisaDetailAbateDetailDAO();
+            GBCJSONRecordDAO jsonDAO = new GBCJSONRecordDAO();
+            VouDetailDAO vouDetailDAO = new VouDetailDAO();
+            VouMainDAO vouMainDAO = new VouMainDAO();
+
+            Vw_GBCVisaDetail sp_GBCVisaDetail = new Vw_GBCVisaDetail();
+            List<Vw_GBCVisaDetail> vwList = new List<Vw_GBCVisaDetail>();
+            string JSON1 = null; //宣告回傳JSON1
+
+            //JSON底稿定義
+            //List<最外層> vouTopList = new List<最外層>(); //可能有多筆明細號,所以用集合包起來
+            最外層 vouTop = new 最外層(); //宣告輸出JSON格式
+            最外層 vouTop2 = null; //宣告輸出JSON2格式
+
+            List<傳票明細> vouDtlList = new List<傳票明細>();
+            List<傳票受款人> vouPayList = new List<傳票受款人>();
+            List<傳票內容> vouCollectionList = new List<傳票內容>();
+
+            //如果會開到第二種傳票時須額外再定義一次
+            List<傳票明細> vouDtlList2 = new List<傳票明細>();
+            List<傳票受款人> vouPayList2 = new List<傳票受款人>();
+            List<傳票內容> vouCollectionList2 = new List<傳票內容>();
+
+            傳票主檔 vouMain = new 傳票主檔();
+            傳票內容 vouCollection = new 傳票內容();
+
+            //宣告接收從預控端取得之JSON字串
+            string JSONReturn = "";
+
+            //先判斷基金代號
+
+            if (fundNo == "040")//菸害服務參考
+            {
+                HPAGBCWebService.HPAGBCWebService ws = new HPAGBCWebService.HPAGBCWebService();
+                JSONReturn = ws.GetSP_GBCVisaDetailJSON(accYear, acmWordNum, AccType);
+            }
+            else
+            {
+                return "基金代號有誤! 號碼為: " + fundNo;
+            }
+
+            try
+            {
+                vwList = JsonConvert.DeserializeObject<List<Vw_GBCVisaDetail>>(JSONReturn);  //反序列化JSON               
+            }
+            catch (Exception e)
+            {
+                return JSONReturn;
+            }
+
+            var accKindList = from acckind in vwList select acckind.PK_種類;//取種類集合
+            var accKind = accKindList.First();//取第一筆種類名
+            var accSumMoney = (from money in vwList select money.F_核定金額).Sum();//取核銷總額
+            var PayVouKind = (from voukind in vwList select voukind.基金代碼).First();//取票種類(主要是用來區分付款憑單(vouKind=5)或是支出傳票(vouKind=2))
+
+            int isPrePay = 0; //有無預付
+            int isLog = 0; //有無預付
+
+            if (PayVouKind == "090") //如果是家防基金,使用憑單
+            {
+                PayVouKind = "5";
+            }
+            else
+            {
+                PayVouKind = "2";
+            }
+
+            /*
+             * 一共有六種狀態,分別為:
+             * 1.預付    、2.核銷    、3.估列、
+             * 4.估列收回、5.預撥收回、6.核銷收回、
+             * 7.轉正
+             */
+
+            #region 預付
+            if ("預付".Equals(accKind))
+            {
+                foreach (var vwListItem in vwList)
+                {
+                    sp_GBCVisaDetail.基金代碼 = vwListItem.基金代碼;
+                    sp_GBCVisaDetail.PK_會計年度 = vwListItem.PK_會計年度;
+                    sp_GBCVisaDetail.PK_動支編號 = vwListItem.PK_動支編號;
+                    sp_GBCVisaDetail.PK_種類 = vwListItem.PK_種類;
+                    sp_GBCVisaDetail.PK_次別 = vwListItem.PK_次別;
+                    sp_GBCVisaDetail.PK_明細號 = vwListItem.PK_明細號;
+                    sp_GBCVisaDetail.F_科室代碼 = vwListItem.F_科室代碼;
+                    sp_GBCVisaDetail.F_用途別代碼 = vwListItem.F_用途別代碼;
+                    sp_GBCVisaDetail.F_計畫代碼 = vwListItem.F_計畫代碼;
+                    sp_GBCVisaDetail.F_動支金額 = vwListItem.F_動支金額;
+                    sp_GBCVisaDetail.F_製票日 = vwListItem.F_製票日;
+                    sp_GBCVisaDetail.F_是否核定 = vwListItem.F_是否核定;
+                    sp_GBCVisaDetail.F_核定金額 = vwListItem.F_核定金額;
+                    sp_GBCVisaDetail.F_核定日期 = vwListItem.F_核定日期;
+                    sp_GBCVisaDetail.F_摘要 = vwListItem.F_摘要;
+                    sp_GBCVisaDetail.F_受款人 = vwListItem.F_受款人;
+                    sp_GBCVisaDetail.F_受款人編號 = vwListItem.F_受款人編號;
+                    sp_GBCVisaDetail.F_原動支編號 = vwListItem.F_原動支編號;
+                    sp_GBCVisaDetail.F_批號 = vwListItem.F_批號;
+
+                    try
+                    {
+                        isLog = dao.FindLog(x => x.基金代碼 == sp_GBCVisaDetail.基金代碼 && x.PK_會計年度 == sp_GBCVisaDetail.PK_會計年度 && x.PK_動支編號 == sp_GBCVisaDetail.PK_動支編號 && x.PK_種類 == sp_GBCVisaDetail.PK_種類 && x.PK_次別 == sp_GBCVisaDetail.PK_次別 && x.PK_明細號 == sp_GBCVisaDetail.PK_明細號);
+                        string isPass = jsonDAO.IsPass(x => x.基金代碼 == sp_GBCVisaDetail.基金代碼 && x.PFK_會計年度 == sp_GBCVisaDetail.PK_會計年度 && x.PFK_動支編號 == sp_GBCVisaDetail.PK_動支編號 && x.PFK_種類 == sp_GBCVisaDetail.PK_種類 && x.PFK_次別 == sp_GBCVisaDetail.PK_次別);
+
+                        if ((isLog > 0) && isPass.Equals("1"))
+                        {
+                            return "此筆資料已轉入過,並且結案。";
+                        }
+                        else if (((isLog > 0) && isPass.Equals("0")))
+                        {
+                            dao.Update(sp_GBCVisaDetail);
+                            jsonDAO.DeleteJsonRecord1(sp_GBCVisaDetail);
+                        }
+                        else
+                        {
+                            dao.Insert(sp_GBCVisaDetail);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        return e.Message;
+                    }
+
+                    傳票明細 vouDtl_D = new 傳票明細()
+                    {
+                        借貸別 = "借",
+                        科目代號 = "1154",
+                        科目名稱 = "預付費用",
+                        摘要 = sp_GBCVisaDetail.F_摘要,
+                        金額 = sp_GBCVisaDetail.F_核定金額,
+                        計畫代碼 = sp_GBCVisaDetail.F_計畫代碼,
+                        用途別代碼 = sp_GBCVisaDetail.F_用途別代碼,
+                        沖轉字號 = "",
+                        對象代碼 = sp_GBCVisaDetail.F_受款人編號,
+                        對象說明 = sp_GBCVisaDetail.F_受款人,
+                        明細號 = sp_GBCVisaDetail.PK_明細號
+                    };
+
+                    //自付勞健保部分
+                    if (sp_GBCVisaDetail.F_計畫代碼.Substring(0,1)=="2")
+                    {
+                        vouDtl_D.科目代號 = "115Y";
+                        vouDtl_D.科目名稱 = "其他預付款";
+                        vouDtl_D.計畫代碼 = "";
+                        vouDtl_D.用途別代碼 = "";
+                    }
+                    //else if (sp_GBCVisaDetail.PK_會計年度 != sp_GBCVisaDetail.PK_動支編號.Substring(0,3))
+                    //{
+                    //    //預付以前年度，改從YearlyOffset表取計畫科目
+                    //    vouDtl_D.計畫代碼 = "";
+                    //    vouDtl_D.用途別代碼 = "";
+                    //    vouDtl_D.沖轉字號 = acmWordNum;
+                    //}
+
+                    vouDtlList.Add(vouDtl_D);
+                    傳票受款人 vouPay = new 傳票受款人()
+                    {
+                        //統一編號 = vw_GBCVisaDetail.F_受款人編號,
+                        //受款人名稱 = vw_GBCVisaDetail.F_受款人,
+                        //地址 = "",
+                        //實付金額 = vw_GBCVisaDetail.F_核定金額,
+                        //銀行代號 = "",
+                        //銀行名稱 = "",
+                        //銀行帳號 = "",
+                        //帳戶名稱 = ""
+                        統一編號 = "",
+                        受款人名稱 = "",
+                        地址 = "",
+                        實付金額 = 0,
+                        銀行代號 = "",
+                        銀行名稱 = "",
+                        銀行帳號 = "",
+                        帳戶名稱 = ""
+                    };
+                    vouPayList.Add(vouPay);
+
+                    //填傳票明細號1
+                    //dao.FillVouDtl1(vw_GBCVisaDetail.基金代碼, vw_GBCVisaDetail.PK_會計年度, vw_GBCVisaDetail.PK_動支編號, vw_GBCVisaDetail.PK_種類, vw_GBCVisaDetail.PK_次別, vw_GBCVisaDetail.PK_明細號, vouDtlList.Count);
+                }
+                //重新處理受款人清單,如果有重複受款人名稱,則金額加總
+                var vouPayGroup = from xxx in vouPayList
+                                  group xxx by new { xxx.統一編號, xxx.受款人名稱, xxx.地址, xxx.銀行代號, xxx.銀行名稱, xxx.銀行帳號, xxx.帳戶名稱 } into g
+                                  select new { 統一編號 = g.Key.統一編號, 受款人名稱 = g.Key.受款人名稱, 地址 = g.Key.地址, 銀行代號 = g.Key.銀行代號, 銀行名稱 = g.Key.銀行名稱, 銀行帳號 = g.Key.銀行帳號, 帳戶名稱 = g.Key.帳戶名稱, 實付金額 = g.Sum(xxx => xxx.實付金額) };
+                //vouPayList = new List<傳票受款人>();
+                //foreach (var vouPayGroupItem in vouPayGroup)
+                //{
+                //    傳票受款人 vouPay = new 傳票受款人();
+                //    vouPay.統一編號 = vouPayGroupItem.統一編號;
+                //    vouPay.受款人名稱 = vouPayGroupItem.受款人名稱;
+                //    vouPay.地址 = vouPayGroupItem.地址;
+                //    vouPay.實付金額 = vouPayGroupItem.實付金額;
+                //    vouPay.銀行代號 = vouPayGroupItem.銀行代號;
+                //    vouPay.銀行名稱 = vouPayGroupItem.銀行名稱;
+                //    vouPay.銀行帳號 = vouPayGroupItem.銀行帳號;
+                //    vouPay.帳戶名稱 = vouPayGroupItem.帳戶名稱;
+                //    vouPayList.Add(vouPay);
+                //}
+
+                vouMain.傳票種類 = PayVouKind;
+                vouMain.製票日期 = "";
+                vouMain.主摘要 = sp_GBCVisaDetail.F_摘要;
+                vouMain.交付方式 = "1";
+
+                傳票明細 vouDtl_C = new 傳票明細()
+                {
+                    借貸別 = "貸",
+                    科目代號 = "11120107",
+                    科目名稱 = "銀行存款",
+                    摘要 = sp_GBCVisaDetail.F_摘要,
+                    金額 = accSumMoney,
+                    計畫代碼 = "",
+                    用途別代碼 = "",
+                    沖轉字號 = "",
+                    對象代碼 = "",
+                    對象說明 = ""
+                };
+                vouDtlList.Add(vouDtl_C);
+
+                vouCollection.傳票主檔 = vouMain;
+                vouCollection.傳票明細 = vouDtlList;
+                vouCollection.傳票受款人 = vouPayList;
+
+                vouCollectionList.Add(vouCollection);
+
+                vouTop.基金代碼 = sp_GBCVisaDetail.基金代碼;
+                vouTop.年度 = sp_GBCVisaDetail.PK_會計年度;
+                vouTop.動支編號 = sp_GBCVisaDetail.PK_動支編號;
+                vouTop.種類 = sp_GBCVisaDetail.PK_種類;
+                vouTop.次別 = sp_GBCVisaDetail.PK_次別;
+                vouTop.明細號 = sp_GBCVisaDetail.PK_明細號;
+                vouTop.傳票內容 = vouCollectionList;
+            }
+            #endregion
+
+            #region 核銷(含轉正)
+            if ("核銷".Equals(accKind))
+            {
+                //確認是不是要開現轉(實支+轉正)
+                foreach (var accKindListItem in accKindList)
+                {
+                    if ("轉正".Equals(accKindListItem))
+                    {
+                        PayVouKind = "3";
+                    }
+                }
+
+                //現轉的情況
+                if (PayVouKind == "3")
+                {
+                    foreach (var vwListItem in vwList)
+                    {
+                        sp_GBCVisaDetail.基金代碼 = vwListItem.基金代碼;
+                        sp_GBCVisaDetail.PK_會計年度 = vwListItem.PK_會計年度;
+                        sp_GBCVisaDetail.PK_動支編號 = vwListItem.PK_動支編號;
+                        sp_GBCVisaDetail.PK_種類 = vwListItem.PK_種類;
+                        sp_GBCVisaDetail.PK_次別 = vwListItem.PK_次別;
+                        sp_GBCVisaDetail.PK_明細號 = vwListItem.PK_明細號;
+                        sp_GBCVisaDetail.F_科室代碼 = vwListItem.F_科室代碼;
+                        sp_GBCVisaDetail.F_用途別代碼 = vwListItem.F_用途別代碼;
+                        sp_GBCVisaDetail.F_計畫代碼 = vwListItem.F_計畫代碼;
+                        sp_GBCVisaDetail.F_動支金額 = vwListItem.F_動支金額;
+                        sp_GBCVisaDetail.F_製票日 = vwListItem.F_製票日;
+                        sp_GBCVisaDetail.F_是否核定 = vwListItem.F_是否核定;
+                        sp_GBCVisaDetail.F_核定金額 = vwListItem.F_核定金額;
+                        sp_GBCVisaDetail.F_核定日期 = vwListItem.F_核定日期;
+                        sp_GBCVisaDetail.F_摘要 = vwListItem.F_摘要;
+                        sp_GBCVisaDetail.F_受款人 = vwListItem.F_受款人;
+                        sp_GBCVisaDetail.F_受款人編號 = vwListItem.F_受款人編號;
+                        sp_GBCVisaDetail.F_原動支編號 = vwListItem.F_原動支編號;
+                        sp_GBCVisaDetail.F_批號 = vwListItem.F_批號;
+
+                        try
+                        {
+                            isLog = dao.FindLog(x => x.基金代碼 == sp_GBCVisaDetail.基金代碼 && x.PK_會計年度 == sp_GBCVisaDetail.PK_會計年度 && x.PK_動支編號 == sp_GBCVisaDetail.PK_動支編號 && x.PK_種類 == sp_GBCVisaDetail.PK_種類 && x.PK_次別 == sp_GBCVisaDetail.PK_次別 && x.PK_明細號 == sp_GBCVisaDetail.PK_明細號);
+                            string isPass = jsonDAO.IsPass(x => x.基金代碼 == sp_GBCVisaDetail.基金代碼 && x.PFK_會計年度 == sp_GBCVisaDetail.PK_會計年度 && x.PFK_動支編號 == sp_GBCVisaDetail.PK_動支編號 && x.PFK_種類 == sp_GBCVisaDetail.PK_種類 && x.PFK_次別 == sp_GBCVisaDetail.PK_次別);
+
+                            if ((isLog > 0) && isPass.Equals("1"))
+                            {
+                                return "此筆資料已轉入過,並且結案。";
+                            }
+                            else if (((isLog > 0) && isPass.Equals("0")))
+                            {
+                                dao.Update(sp_GBCVisaDetail);
+                                jsonDAO.DeleteJsonRecord1(sp_GBCVisaDetail);
+                            }
+                            else
+                            {
+                                dao.Insert(sp_GBCVisaDetail);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            return e.Message;
+                        }
+
+                        if (sp_GBCVisaDetail.PK_種類 == "轉正")
+                        {
+                            //找沖轉字號
+                            string AbateVouNo = "";
+                            string abateVouCnt = sp_GBCVisaDetail.PK_次別.Substring(sp_GBCVisaDetail.PK_次別.IndexOf("-") + 1);
+                            var getAbateVouNo = dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == "040" && x.PK_會計年度 == sp_GBCVisaDetail.PK_會計年度 && x.PK_動支編號 == sp_GBCVisaDetail.PK_動支編號 && x.PK_種類 == "預付" && x.PK_次別 == abateVouCnt && x.PK_明細號 == sp_GBCVisaDetail.PK_明細號).ToList();
+
+                            if (getAbateVouNo.Count() > 0)
+                            {
+                                AbateVouNo = (from s1 in getAbateVouNo select s1.F_傳票年度 + "-" + s1.F_傳票號1 + "-" + s1.F_傳票明細號1).FirstOrDefault();
+                            }
+
+                            傳票明細 vouDtl_C = new 傳票明細()
+                            {
+                                借貸別 = "貸",
+                                科目代號 = "1154",
+                                科目名稱 = "預付費用",
+                                摘要 = sp_GBCVisaDetail.F_摘要 + "-" + sp_GBCVisaDetail.F_受款人,
+                                金額 = sp_GBCVisaDetail.F_核定金額,
+                                計畫代碼 = sp_GBCVisaDetail.F_計畫代碼,
+                                用途別代碼 = sp_GBCVisaDetail.F_用途別代碼,
+                                沖轉字號 = AbateVouNo,
+                                對象代碼 = sp_GBCVisaDetail.F_受款人編號,
+                                對象說明 = sp_GBCVisaDetail.F_受款人,
+                                明細號 = sp_GBCVisaDetail.PK_明細號
+                            };
+
+                            if (sp_GBCVisaDetail.F_計畫代碼.Substring(0, 1) == "2")
+                            {
+                                vouDtl_C.科目代號 = "115Y";
+                                vouDtl_C.科目名稱 = "其他預付款";
+                                vouDtl_C.計畫代碼 = "";
+                                vouDtl_C.用途別代碼 = "";
+                            }
+                            vouDtlList.Add(vouDtl_C);
+
+                            傳票明細 vouDtl_D = new 傳票明細()
+                            {
+                                借貸別 = "借",
+                                科目代號 = "5",
+                                科目名稱 = "基金用途",
+                                摘要 = sp_GBCVisaDetail.F_摘要 + "-" + sp_GBCVisaDetail.F_受款人,
+                                金額 = sp_GBCVisaDetail.F_核定金額,
+                                計畫代碼 = sp_GBCVisaDetail.F_計畫代碼,
+                                用途別代碼 = sp_GBCVisaDetail.F_用途別代碼,
+                                沖轉字號 = "",
+                                對象代碼 = sp_GBCVisaDetail.F_受款人編號,
+                                對象說明 = sp_GBCVisaDetail.F_受款人,
+
+                            };
+                            //沖應付代收款
+                            if (sp_GBCVisaDetail.F_計畫代碼.Substring(0, 1) == "2")
+                            {
+                                vouDtl_C.科目代號 = sp_GBCVisaDetail.F_計畫代碼;
+                                vouDtl_C.科目名稱 = "";
+                                vouDtl_C.計畫代碼 = "";
+                                vouDtl_C.用途別代碼 = "";
+                            }
+                            vouDtlList.Add(vouDtl_D);
+                        }
+                        else
+                        {
+                            //實支
+                            傳票明細 vouDtl_D = new 傳票明細()
+                            {
+                                借貸別 = "借",
+                                科目代號 = "5",
+                                科目名稱 = "基金用途",
+                                摘要 = sp_GBCVisaDetail.F_摘要 + "-" + sp_GBCVisaDetail.F_受款人,
+                                金額 = sp_GBCVisaDetail.F_核定金額,
+                                計畫代碼 = sp_GBCVisaDetail.F_計畫代碼,
+                                用途別代碼 = sp_GBCVisaDetail.F_用途別代碼,
+                                沖轉字號 = "",
+                                對象代碼 = sp_GBCVisaDetail.F_受款人編號,
+                                對象說明 = sp_GBCVisaDetail.F_受款人,
+                                明細號 = sp_GBCVisaDetail.PK_明細號
+
+                            };
+                            vouDtlList.Add(vouDtl_D);
+
+                            傳票明細 vouDtl_C = new 傳票明細()
+                            {
+                                借貸別 = "貸",
+                                科目代號 = "11120107",
+                                科目名稱 = "銀行存款",
+                                摘要 = sp_GBCVisaDetail.F_摘要,
+                                金額 = sp_GBCVisaDetail.F_核定金額,
+                                計畫代碼 = "",
+                                用途別代碼 = "",
+                                沖轉字號 = "",
+                                對象代碼 = "",
+                                對象說明 = "",
+                            };
+                            vouDtlList.Add(vouDtl_C);
+                        }
+
+                        傳票受款人 vouPay = new 傳票受款人()
+                        {
+                            //統一編號 = vw_GBCVisaDetail.F_受款人編號,
+                            //受款人名稱 = vw_GBCVisaDetail.F_受款人,
+                            //地址 = "",
+                            //實付金額 = vw_GBCVisaDetail.F_核定金額,
+                            //銀行代號 = "",
+                            //銀行名稱 = "",
+                            //銀行帳號 = "",
+                            //帳戶名稱 = ""
+                            統一編號 = "",
+                            受款人名稱 = "",
+                            地址 = "",
+                            實付金額 = 0,
+                            銀行代號 = "",
+                            銀行名稱 = "",
+                            銀行帳號 = "",
+                            帳戶名稱 = ""
+                        };
+                        vouPayList.Add(vouPay);
+                    }
+                    //重新處理受款人清單,如果有重複受款人名稱,則金額加總
+                    var vouPayGroup = from xxx in vouPayList
+                                      group xxx by new { xxx.統一編號, xxx.受款人名稱, xxx.地址, xxx.銀行代號, xxx.銀行名稱, xxx.銀行帳號, xxx.帳戶名稱 } into g
+                                      select new { 統一編號 = g.Key.統一編號, 受款人名稱 = g.Key.受款人名稱, 地址 = g.Key.地址, 銀行代號 = g.Key.銀行代號, 銀行名稱 = g.Key.銀行名稱, 銀行帳號 = g.Key.銀行帳號, 帳戶名稱 = g.Key.帳戶名稱, 實付金額 = g.Sum(xxx => xxx.實付金額) };
+                    //vouPayList = new List<傳票受款人>();
+                    //foreach (var vouPayGroupItem in vouPayGroup)
+                    //{
+                    //    傳票受款人 vouPay = new 傳票受款人();
+                    //    vouPay.統一編號 = vouPayGroupItem.統一編號;
+                    //    vouPay.受款人名稱 = vouPayGroupItem.受款人名稱;
+                    //    vouPay.地址 = vouPayGroupItem.地址;
+                    //    vouPay.實付金額 = vouPayGroupItem.實付金額;
+                    //    vouPay.銀行代號 = vouPayGroupItem.銀行代號;
+                    //    vouPay.銀行名稱 = vouPayGroupItem.銀行名稱;
+                    //    vouPay.銀行帳號 = vouPayGroupItem.銀行帳號;
+                    //    vouPay.帳戶名稱 = vouPayGroupItem.帳戶名稱;
+                    //    vouPayList.Add(vouPay);
+                    //}
+
+                    vouMain.傳票種類 = PayVouKind;
+                    vouMain.製票日期 = "";
+                    vouMain.主摘要 = sp_GBCVisaDetail.F_摘要;
+                    vouMain.交付方式 = "1";
+
+                    vouCollection.傳票主檔 = vouMain;
+                    vouCollection.傳票明細 = vouDtlList;
+                    vouCollection.傳票受款人 = vouPayList;
+
+                    vouCollectionList.Add(vouCollection);
+
+                    vouTop.基金代碼 = sp_GBCVisaDetail.基金代碼;
+                    vouTop.年度 = sp_GBCVisaDetail.PK_會計年度;
+                    vouTop.動支編號 = sp_GBCVisaDetail.PK_動支編號;
+                    vouTop.種類 = sp_GBCVisaDetail.PK_種類;
+                    vouTop.次別 = sp_GBCVisaDetail.PK_次別;
+                    vouTop.明細號 = sp_GBCVisaDetail.PK_明細號;
+                    vouTop.傳票內容 = vouCollectionList;
+
+                }
+                else //支出傳票
+                {
+                    foreach (var vwListItem in vwList)
+                    {
+                        sp_GBCVisaDetail.基金代碼 = vwListItem.基金代碼;
+                        sp_GBCVisaDetail.PK_會計年度 = vwListItem.PK_會計年度;
+                        sp_GBCVisaDetail.PK_動支編號 = vwListItem.PK_動支編號;
+                        sp_GBCVisaDetail.PK_種類 = vwListItem.PK_種類;
+                        sp_GBCVisaDetail.PK_次別 = vwListItem.PK_次別;
+                        sp_GBCVisaDetail.PK_明細號 = vwListItem.PK_明細號;
+                        sp_GBCVisaDetail.F_科室代碼 = vwListItem.F_科室代碼;
+                        sp_GBCVisaDetail.F_用途別代碼 = vwListItem.F_用途別代碼;
+                        sp_GBCVisaDetail.F_計畫代碼 = vwListItem.F_計畫代碼;
+                        sp_GBCVisaDetail.F_動支金額 = vwListItem.F_動支金額;
+                        sp_GBCVisaDetail.F_製票日 = vwListItem.F_製票日;
+                        sp_GBCVisaDetail.F_是否核定 = vwListItem.F_是否核定;
+                        sp_GBCVisaDetail.F_核定金額 = vwListItem.F_核定金額;
+                        sp_GBCVisaDetail.F_核定日期 = vwListItem.F_核定日期;
+                        sp_GBCVisaDetail.F_摘要 = vwListItem.F_摘要;
+                        sp_GBCVisaDetail.F_受款人 = vwListItem.F_受款人;
+                        sp_GBCVisaDetail.F_受款人編號 = vwListItem.F_受款人編號;
+                        sp_GBCVisaDetail.F_原動支編號 = vwListItem.F_原動支編號;
+                        sp_GBCVisaDetail.F_批號 = vwListItem.F_批號;
+
+                        try
+                        {
+                            isLog = dao.FindLog(x => x.基金代碼 == sp_GBCVisaDetail.基金代碼 && x.PK_會計年度 == sp_GBCVisaDetail.PK_會計年度 && x.PK_動支編號 == sp_GBCVisaDetail.PK_動支編號 && x.PK_種類 == sp_GBCVisaDetail.PK_種類 && x.PK_次別 == sp_GBCVisaDetail.PK_次別 && x.PK_明細號 == sp_GBCVisaDetail.PK_明細號);
+                            string isPass = jsonDAO.IsPass(x => x.基金代碼 == sp_GBCVisaDetail.基金代碼 && x.PFK_會計年度 == sp_GBCVisaDetail.PK_會計年度 && x.PFK_動支編號 == sp_GBCVisaDetail.PK_動支編號 && x.PFK_種類 == sp_GBCVisaDetail.PK_種類 && x.PFK_次別 == sp_GBCVisaDetail.PK_次別);
+
+                            if ((isLog > 0) && isPass.Equals("1"))
+                            {
+                                return "此筆資料已轉入過,並且結案。";
+                            }
+                            else if (((isLog > 0) && isPass.Equals("0")))
+                            {
+                                dao.Update(sp_GBCVisaDetail);
+                                jsonDAO.DeleteJsonRecord1(sp_GBCVisaDetail);
+                            }
+                            else
+                            {
+                                dao.Insert(sp_GBCVisaDetail);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            return e.Message;
+                        }
+
+                        傳票明細 vouDtl_D = new 傳票明細()
+                        {
+                            借貸別 = "借",
+                            科目代號 = "5",
+                            科目名稱 = "基金用途",
+                            摘要 = sp_GBCVisaDetail.F_摘要,
+                            金額 = sp_GBCVisaDetail.F_核定金額,
+                            計畫代碼 = sp_GBCVisaDetail.F_計畫代碼,
+                            用途別代碼 = sp_GBCVisaDetail.F_用途別代碼,
+                            沖轉字號 = "",
+                            對象代碼 = sp_GBCVisaDetail.F_受款人編號,
+                            對象說明 = sp_GBCVisaDetail.F_受款人,
+                            明細號 = sp_GBCVisaDetail.PK_明細號
+                        };
+                        //確認是不是開立應付代收款
+                        if (vouDtl_D.計畫代碼.Substring(0,1) == "2")
+                        {
+                            vouDtl_D.科目代號 = sp_GBCVisaDetail.F_計畫代碼;
+                            vouDtl_D.科目名稱 = "應付代收款";
+                            vouDtl_D.計畫代碼 = "";
+                        }
+
+                        vouDtlList.Add(vouDtl_D);
+                        傳票受款人 vouPay = new 傳票受款人()
+                        {
+                            //統一編號 = vw_GBCVisaDetail.F_受款人編號,
+                            //受款人名稱 = vw_GBCVisaDetail.F_受款人,
+                            //地址 = "",
+                            //實付金額 = vw_GBCVisaDetail.F_核定金額,
+                            //銀行代號 = "",
+                            //銀行名稱 = "",
+                            //銀行帳號 = "",
+                            //帳戶名稱 = ""
+                            統一編號 = "",
+                            受款人名稱 = "",
+                            地址 = "",
+                            實付金額 = 0,
+                            銀行代號 = "",
+                            銀行名稱 = "",
+                            銀行帳號 = "",
+                            帳戶名稱 = ""
+                        };
+                        vouPayList.Add(vouPay);
+
+                        //填傳票明細號1
+                        //dao.FillVouDtl1(vw_GBCVisaDetail.基金代碼, vw_GBCVisaDetail.PK_會計年度, vw_GBCVisaDetail.PK_動支編號, vw_GBCVisaDetail.PK_種類, vw_GBCVisaDetail.PK_次別, vw_GBCVisaDetail.PK_明細號, vouDtlList.Count);
+                    }
+                    //重新處理受款人清單,如果有重複受款人名稱,則金額加總
+                    var vouPayGroup = from xxx in vouPayList
+                                      group xxx by new { xxx.統一編號, xxx.受款人名稱, xxx.地址, xxx.銀行代號, xxx.銀行名稱, xxx.銀行帳號, xxx.帳戶名稱 } into g
+                                      select new { 統一編號 = g.Key.統一編號, 受款人名稱 = g.Key.受款人名稱, 地址 = g.Key.地址, 銀行代號 = g.Key.銀行代號, 銀行名稱 = g.Key.銀行名稱, 銀行帳號 = g.Key.銀行帳號, 帳戶名稱 = g.Key.帳戶名稱, 實付金額 = g.Sum(xxx => xxx.實付金額) };
+                    //vouPayList = new List<傳票受款人>();
+                    //foreach (var vouPayGroupItem in vouPayGroup)
+                    //{
+                    //    傳票受款人 vouPay = new 傳票受款人();
+                    //    vouPay.統一編號 = vouPayGroupItem.統一編號;
+                    //    vouPay.受款人名稱 = vouPayGroupItem.受款人名稱;
+                    //    vouPay.地址 = vouPayGroupItem.地址;
+                    //    vouPay.實付金額 = vouPayGroupItem.實付金額;
+                    //    vouPay.銀行代號 = vouPayGroupItem.銀行代號;
+                    //    vouPay.銀行名稱 = vouPayGroupItem.銀行名稱;
+                    //    vouPay.銀行帳號 = vouPayGroupItem.銀行帳號;
+                    //    vouPay.帳戶名稱 = vouPayGroupItem.帳戶名稱;
+                    //    vouPayList.Add(vouPay);
+                    //}
+
+                    vouMain.傳票種類 = PayVouKind;
+                    vouMain.製票日期 = "";
+                    vouMain.主摘要 = sp_GBCVisaDetail.F_摘要;
+                    vouMain.交付方式 = "1";
+
+                    傳票明細 vouDtl_C = new 傳票明細()
+                    {
+                        借貸別 = "貸",
+                        科目代號 = "11120107",
+                        科目名稱 = "銀行存款",
+                        摘要 = sp_GBCVisaDetail.F_摘要,
+                        金額 = accSumMoney,
+                        計畫代碼 = "",
+                        用途別代碼 = "",
+                        沖轉字號 = "",
+                        對象代碼 = "",
+                        對象說明 = ""
+                    };
+                    vouDtlList.Add(vouDtl_C);
+
+                    vouCollection.傳票主檔 = vouMain;
+                    vouCollection.傳票明細 = vouDtlList;
+                    vouCollection.傳票受款人 = vouPayList;
+
+                    vouCollectionList.Add(vouCollection);
+
+                    vouTop.基金代碼 = sp_GBCVisaDetail.基金代碼;
+                    vouTop.年度 = sp_GBCVisaDetail.PK_會計年度;
+                    vouTop.動支編號 = sp_GBCVisaDetail.PK_動支編號;
+                    vouTop.種類 = sp_GBCVisaDetail.PK_種類;
+                    vouTop.次別 = sp_GBCVisaDetail.PK_次別;
+                    vouTop.明細號 = sp_GBCVisaDetail.PK_明細號;
+                    vouTop.傳票內容 = vouCollectionList;
+                }
+
+                
+            }
+            #endregion
+
+            #region 轉正
+            if ("轉正".Equals(accKind))
+            {
+                foreach (var vwListItem in vwList)
+                {
+                    sp_GBCVisaDetail.基金代碼 = vwListItem.基金代碼;
+                    sp_GBCVisaDetail.PK_會計年度 = vwListItem.PK_會計年度;
+                    sp_GBCVisaDetail.PK_動支編號 = vwListItem.PK_動支編號;
+                    sp_GBCVisaDetail.PK_種類 = vwListItem.PK_種類;
+                    sp_GBCVisaDetail.PK_次別 = vwListItem.PK_次別;
+                    sp_GBCVisaDetail.PK_明細號 = vwListItem.PK_明細號;
+                    sp_GBCVisaDetail.F_科室代碼 = vwListItem.F_科室代碼;
+                    sp_GBCVisaDetail.F_用途別代碼 = vwListItem.F_用途別代碼;
+                    sp_GBCVisaDetail.F_計畫代碼 = vwListItem.F_計畫代碼;
+                    sp_GBCVisaDetail.F_動支金額 = vwListItem.F_動支金額;
+                    sp_GBCVisaDetail.F_製票日 = vwListItem.F_製票日;
+                    sp_GBCVisaDetail.F_是否核定 = vwListItem.F_是否核定;
+                    sp_GBCVisaDetail.F_核定金額 = vwListItem.F_核定金額;
+                    sp_GBCVisaDetail.F_核定日期 = vwListItem.F_核定日期;
+                    sp_GBCVisaDetail.F_摘要 = vwListItem.F_摘要;
+                    sp_GBCVisaDetail.F_受款人 = vwListItem.F_受款人;
+                    sp_GBCVisaDetail.F_受款人編號 = vwListItem.F_受款人編號;
+                    sp_GBCVisaDetail.F_原動支編號 = vwListItem.F_原動支編號;
+                    sp_GBCVisaDetail.F_批號 = vwListItem.F_批號;
+
+                    try
+                    {
+                        isLog = dao.FindLog(x => x.基金代碼 == sp_GBCVisaDetail.基金代碼 && x.PK_會計年度 == sp_GBCVisaDetail.PK_會計年度 && x.PK_動支編號 == sp_GBCVisaDetail.PK_動支編號 && x.PK_種類 == sp_GBCVisaDetail.PK_種類 && x.PK_次別 == sp_GBCVisaDetail.PK_次別 && x.PK_明細號 == sp_GBCVisaDetail.PK_明細號);
+                        string isPass = jsonDAO.IsPass(x => x.基金代碼 == sp_GBCVisaDetail.基金代碼 && x.PFK_會計年度 == sp_GBCVisaDetail.PK_會計年度 && x.PFK_動支編號 == sp_GBCVisaDetail.PK_動支編號 && x.PFK_種類 == sp_GBCVisaDetail.PK_種類 && x.PFK_次別 == sp_GBCVisaDetail.PK_次別);
+
+                        if ((isLog > 0) && isPass.Equals("1"))
+                        {
+                            return "此筆資料已轉入過,並且結案。";
+                        }
+                        else if (((isLog > 0) && isPass.Equals("0")))
+                        {
+                            dao.Update(sp_GBCVisaDetail);
+                            jsonDAO.DeleteJsonRecord1(sp_GBCVisaDetail);
+                        }
+                        else
+                        {
+                            dao.Insert(sp_GBCVisaDetail);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        return e.Message;
+                    }
+
+                    //找沖轉字號
+                    string AbateVouNo = "";
+                    string abateVouCnt = sp_GBCVisaDetail.PK_次別.Substring(sp_GBCVisaDetail.PK_次別.IndexOf("-") + 1);
+                    var getAbateVouNo = dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == "040" && x.PK_會計年度 == sp_GBCVisaDetail.PK_會計年度 && x.PK_動支編號 == sp_GBCVisaDetail.PK_動支編號 && x.PK_種類 == "預付" && x.PK_次別 == abateVouCnt && x.PK_明細號 == sp_GBCVisaDetail.PK_明細號).ToList();
+
+                    if (getAbateVouNo.Count() > 0)
+                    {
+                        AbateVouNo = (from s1 in getAbateVouNo select s1.F_傳票年度 + "-" + s1.F_傳票號1 + "-" + s1.F_傳票明細號1).FirstOrDefault();
+                    }
+
+                    傳票明細 vouDtl_C = new 傳票明細()
+                    {
+                        借貸別 = "貸",
+                        科目代號 = "1154",
+                        科目名稱 = "預付費用",
+                        摘要 = sp_GBCVisaDetail.F_摘要 + "-" + sp_GBCVisaDetail.F_受款人,
+                        金額 = sp_GBCVisaDetail.F_核定金額,
+                        計畫代碼 = sp_GBCVisaDetail.F_計畫代碼,
+                        用途別代碼 = sp_GBCVisaDetail.F_用途別代碼,
+                        沖轉字號 = AbateVouNo,
+                        對象代碼 = sp_GBCVisaDetail.F_受款人編號,
+                        對象說明 = sp_GBCVisaDetail.F_受款人,
+                        明細號 = sp_GBCVisaDetail.PK_明細號
+                    };
+
+                    if (sp_GBCVisaDetail.F_計畫代碼.Substring(0, 1) == "2")
+                    {
+                        vouDtl_C.科目代號 = "115Y";
+                        vouDtl_C.科目名稱 = "其他預付款";
+                        vouDtl_C.計畫代碼 = "";
+                        vouDtl_C.用途別代碼 = "";
+                    }
+
+                    vouDtlList.Add(vouDtl_C);
+
+                    傳票明細 vouDtl_D = new 傳票明細()
+                    {
+                        借貸別 = "借",
+                        科目代號 = "5",
+                        科目名稱 = "基金用途",
+                        摘要 = sp_GBCVisaDetail.F_摘要 + "-" + sp_GBCVisaDetail.F_受款人,
+                        金額 = sp_GBCVisaDetail.F_核定金額,
+                        計畫代碼 = sp_GBCVisaDetail.F_計畫代碼,
+                        用途別代碼 = sp_GBCVisaDetail.F_用途別代碼,
+                        沖轉字號 = "",
+                        對象代碼 = sp_GBCVisaDetail.F_受款人編號,
+                        對象說明 = sp_GBCVisaDetail.F_受款人,
+
+                    };
+
+                    //沖應付代收款
+                    if (sp_GBCVisaDetail.F_計畫代碼.Substring(0, 1) == "2")
+                    {
+                        vouDtl_C.科目代號 = sp_GBCVisaDetail.F_計畫代碼;
+                        vouDtl_C.科目名稱 = "";
+                        vouDtl_C.計畫代碼 = "";
+                        vouDtl_C.用途別代碼 = "";
+                    }
+
+                    vouDtlList.Add(vouDtl_D);
+
+                    傳票受款人 vouPay = new 傳票受款人()
+                    {
+                        //統一編號 = vw_GBCVisaDetail.F_受款人編號,
+                        //受款人名稱 = vw_GBCVisaDetail.F_受款人,
+                        //地址 = "",
+                        //實付金額 = vw_GBCVisaDetail.F_核定金額,
+                        //銀行代號 = "",
+                        //銀行名稱 = "",
+                        //銀行帳號 = "",
+                        //帳戶名稱 = ""
+                        統一編號 = "",
+                        受款人名稱 = "",
+                        地址 = "",
+                        實付金額 = 0,
+                        銀行代號 = "",
+                        銀行名稱 = "",
+                        銀行帳號 = "",
+                        帳戶名稱 = ""
+                    };
+                    vouPayList.Add(vouPay);
+                }
+                //重新處理受款人清單,如果有重複受款人名稱,則金額加總
+                var vouPayGroup = from xxx in vouPayList
+                                  group xxx by new { xxx.統一編號, xxx.受款人名稱, xxx.地址, xxx.銀行代號, xxx.銀行名稱, xxx.銀行帳號, xxx.帳戶名稱 } into g
+                                  select new { 統一編號 = g.Key.統一編號, 受款人名稱 = g.Key.受款人名稱, 地址 = g.Key.地址, 銀行代號 = g.Key.銀行代號, 銀行名稱 = g.Key.銀行名稱, 銀行帳號 = g.Key.銀行帳號, 帳戶名稱 = g.Key.帳戶名稱, 實付金額 = g.Sum(xxx => xxx.實付金額) };
+                //vouPayList = new List<傳票受款人>();
+                //foreach (var vouPayGroupItem in vouPayGroup)
+                //{
+                //    傳票受款人 vouPay = new 傳票受款人();
+                //    vouPay.統一編號 = vouPayGroupItem.統一編號;
+                //    vouPay.受款人名稱 = vouPayGroupItem.受款人名稱;
+                //    vouPay.地址 = vouPayGroupItem.地址;
+                //    vouPay.實付金額 = vouPayGroupItem.實付金額;
+                //    vouPay.銀行代號 = vouPayGroupItem.銀行代號;
+                //    vouPay.銀行名稱 = vouPayGroupItem.銀行名稱;
+                //    vouPay.銀行帳號 = vouPayGroupItem.銀行帳號;
+                //    vouPay.帳戶名稱 = vouPayGroupItem.帳戶名稱;
+                //    vouPayList.Add(vouPay);
+                //}
+
+                vouMain.傳票種類 = "4";
+                vouMain.製票日期 = "";
+                vouMain.主摘要 = sp_GBCVisaDetail.F_摘要;
+                vouMain.交付方式 = "1";
+
+                vouCollection.傳票主檔 = vouMain;
+                vouCollection.傳票明細 = vouDtlList;
+                vouCollection.傳票受款人 = vouPayList;
+
+                vouCollectionList.Add(vouCollection);
+
+                vouTop.基金代碼 = sp_GBCVisaDetail.基金代碼;
+                vouTop.年度 = sp_GBCVisaDetail.PK_會計年度;
+                vouTop.動支編號 = sp_GBCVisaDetail.PK_動支編號;
+                vouTop.種類 = sp_GBCVisaDetail.PK_種類;
+                vouTop.次別 = sp_GBCVisaDetail.PK_次別;
+                vouTop.明細號 = sp_GBCVisaDetail.PK_明細號;
+                vouTop.傳票內容 = vouCollectionList;
+            }
+            #endregion
+
+            #region 估列
+            if ("估列".Equals(accKind))
+            {
+                foreach (var vwListItem in vwList)
+                {
+                    sp_GBCVisaDetail.基金代碼 = vwListItem.基金代碼;
+                    sp_GBCVisaDetail.PK_會計年度 = vwListItem.PK_會計年度;
+                    sp_GBCVisaDetail.PK_動支編號 = vwListItem.PK_動支編號;
+                    sp_GBCVisaDetail.PK_種類 = vwListItem.PK_種類;
+                    sp_GBCVisaDetail.PK_次別 = vwListItem.PK_次別;
+                    sp_GBCVisaDetail.PK_明細號 = vwListItem.PK_明細號;
+                    sp_GBCVisaDetail.F_科室代碼 = vwListItem.F_科室代碼;
+                    sp_GBCVisaDetail.F_用途別代碼 = vwListItem.F_用途別代碼;
+                    sp_GBCVisaDetail.F_計畫代碼 = vwListItem.F_計畫代碼;
+                    sp_GBCVisaDetail.F_動支金額 = vwListItem.F_動支金額;
+                    sp_GBCVisaDetail.F_製票日 = vwListItem.F_製票日;
+                    sp_GBCVisaDetail.F_是否核定 = vwListItem.F_是否核定;
+                    sp_GBCVisaDetail.F_核定金額 = vwListItem.F_核定金額;
+                    sp_GBCVisaDetail.F_核定日期 = vwListItem.F_核定日期;
+                    sp_GBCVisaDetail.F_摘要 = vwListItem.F_摘要;
+                    sp_GBCVisaDetail.F_受款人 = vwListItem.F_受款人;
+                    sp_GBCVisaDetail.F_受款人編號 = vwListItem.F_受款人編號;
+                    sp_GBCVisaDetail.F_原動支編號 = vwListItem.F_原動支編號;
+                    sp_GBCVisaDetail.F_批號 = vwListItem.F_批號;
+
+                    try
+                    {
+                        isLog = dao.FindLog(x => x.基金代碼 == sp_GBCVisaDetail.基金代碼 && x.PK_會計年度 == sp_GBCVisaDetail.PK_會計年度 && x.PK_動支編號 == sp_GBCVisaDetail.PK_動支編號 && x.PK_種類 == sp_GBCVisaDetail.PK_種類 && x.PK_次別 == sp_GBCVisaDetail.PK_次別 && x.PK_明細號 == sp_GBCVisaDetail.PK_明細號);
+                        string isPass = jsonDAO.IsPass(x => x.基金代碼 == sp_GBCVisaDetail.基金代碼 && x.PFK_會計年度 == sp_GBCVisaDetail.PK_會計年度 && x.PFK_動支編號 == sp_GBCVisaDetail.PK_動支編號 && x.PFK_種類 == sp_GBCVisaDetail.PK_種類 && x.PFK_次別 == sp_GBCVisaDetail.PK_次別);
+
+                        if ((isLog > 0) && isPass.Equals("1"))
+                        {
+                            return "此筆資料已轉入過,並且結案。";
+                        }
+                        else if (((isLog > 0) && isPass.Equals("0")))
+                        {
+                            dao.Update(sp_GBCVisaDetail);
+                            jsonDAO.DeleteJsonRecord1(sp_GBCVisaDetail);
+                        }
+                        else
+                        {
+                            dao.Insert(sp_GBCVisaDetail);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        return e.Message;
+                    }
+
+                    傳票明細 vouDtl_D = new 傳票明細()
+                    {
+                        借貸別 = "借",
+                        科目代號 = "5",
+                        科目名稱 = "基金用途",
+                        摘要 = sp_GBCVisaDetail.F_摘要 + "-" + sp_GBCVisaDetail.F_受款人,
+                        金額 = sp_GBCVisaDetail.F_核定金額,
+                        計畫代碼 = sp_GBCVisaDetail.F_計畫代碼,
+                        用途別代碼 = sp_GBCVisaDetail.F_用途別代碼,
+                        沖轉字號 = "",
+                        對象代碼 = sp_GBCVisaDetail.F_受款人編號,
+                        對象說明 = sp_GBCVisaDetail.F_受款人,
+
+                    };
+                    vouDtlList.Add(vouDtl_D);
+
+                    傳票明細 vouDtl_C = new 傳票明細()
+                    {
+                        借貸別 = "貸",
+                        科目代號 = "2125",
+                        科目名稱 = "應付費用",
+                        摘要 = sp_GBCVisaDetail.F_摘要 + "-" + sp_GBCVisaDetail.F_受款人,
+                        金額 = sp_GBCVisaDetail.F_核定金額,
+                        計畫代碼 = sp_GBCVisaDetail.F_計畫代碼,
+                        用途別代碼 = sp_GBCVisaDetail.F_用途別代碼,
+                        沖轉字號 = "",
+                        對象代碼 = sp_GBCVisaDetail.F_受款人編號,
+                        對象說明 = sp_GBCVisaDetail.F_受款人,
+                        明細號 = sp_GBCVisaDetail.PK_明細號
+                    };
+                    vouDtlList.Add(vouDtl_C);
+                    傳票受款人 vouPay = new 傳票受款人()
+                    {
+                        //統一編號 = vw_GBCVisaDetail.F_受款人編號,
+                        //受款人名稱 = vw_GBCVisaDetail.F_受款人,
+                        //地址 = "",
+                        //實付金額 = vw_GBCVisaDetail.F_核定金額,
+                        //銀行代號 = "",
+                        //銀行名稱 = "",
+                        //銀行帳號 = "",
+                        //帳戶名稱 = ""
+                        統一編號 = "",
+                        受款人名稱 = "",
+                        地址 = "",
+                        實付金額 = 0,
+                        銀行代號 = "",
+                        銀行名稱 = "",
+                        銀行帳號 = "",
+                        帳戶名稱 = ""
+                    };
+                    vouPayList.Add(vouPay);
+
+                    //填傳票明細號1
+                    //dao.FillVouDtl1(vw_GBCVisaDetail.基金代碼, vw_GBCVisaDetail.PK_會計年度, vw_GBCVisaDetail.PK_動支編號, vw_GBCVisaDetail.PK_種類, vw_GBCVisaDetail.PK_次別, vw_GBCVisaDetail.PK_明細號, vouDtlList.Count);
+                }
+                //重新處理受款人清單,如果有重複受款人名稱,則金額加總
+                //var vouPayGroup = from xxx in vouPayList
+                //                  group xxx by new { xxx.統一編號, xxx.受款人名稱, xxx.地址, xxx.銀行代號, xxx.銀行名稱, xxx.銀行帳號, xxx.帳戶名稱 } into g
+                //                  select new { 統一編號 = g.Key.統一編號, 受款人名稱 = g.Key.受款人名稱, 地址 = g.Key.地址, 銀行代號 = g.Key.銀行代號, 銀行名稱 = g.Key.銀行名稱, 銀行帳號 = g.Key.銀行帳號, 帳戶名稱 = g.Key.帳戶名稱, 實付金額 = g.Sum(xxx => xxx.實付金額) };
+                //vouPayList = new List<傳票受款人>();
+                //foreach (var vouPayGroupItem in vouPayGroup)
+                //{
+                //    傳票受款人 vouPay = new 傳票受款人();
+                //    vouPay.統一編號 = vouPayGroupItem.統一編號;
+                //    vouPay.受款人名稱 = vouPayGroupItem.受款人名稱;
+                //    vouPay.地址 = vouPayGroupItem.地址;
+                //    vouPay.實付金額 = vouPayGroupItem.實付金額;
+                //    vouPay.銀行代號 = vouPayGroupItem.銀行代號;
+                //    vouPay.銀行名稱 = vouPayGroupItem.銀行名稱;
+                //    vouPay.銀行帳號 = vouPayGroupItem.銀行帳號;
+                //    vouPay.帳戶名稱 = vouPayGroupItem.帳戶名稱;
+                //    vouPayList.Add(vouPay);
+                //}
+
+                vouMain.傳票種類 = "4";
+                vouMain.製票日期 = "";
+                vouMain.主摘要 = sp_GBCVisaDetail.F_摘要;
+                vouMain.交付方式 = "1";
+
+                vouCollection.傳票主檔 = vouMain;
+                vouCollection.傳票明細 = vouDtlList;
+                vouCollection.傳票受款人 = vouPayList;
+
+
+                vouCollectionList.Add(vouCollection);
+
+                vouTop.基金代碼 = sp_GBCVisaDetail.基金代碼;
+                vouTop.年度 = sp_GBCVisaDetail.PK_會計年度;
+                vouTop.動支編號 = sp_GBCVisaDetail.PK_動支編號;
+                vouTop.種類 = sp_GBCVisaDetail.PK_種類;
+                vouTop.次別 = sp_GBCVisaDetail.PK_次別;
+                vouTop.明細號 = sp_GBCVisaDetail.PK_明細號;
+                vouTop.傳票內容 = vouCollectionList;
+
+            }
+            #endregion
+
+            #region 估列收回
+            if ("估列收回".Equals(accKind))
+            {
+                int estimateMoney = 0;
+                int estimateMoneyAbate = 0;
+                int estimateBalance = 0;
+
+                foreach (var vwListItem in vwList)
+                {
+                    sp_GBCVisaDetail.基金代碼 = vwListItem.基金代碼;
+                    sp_GBCVisaDetail.PK_會計年度 = vwListItem.PK_會計年度;
+                    sp_GBCVisaDetail.PK_動支編號 = vwListItem.PK_動支編號;
+                    sp_GBCVisaDetail.PK_種類 = vwListItem.PK_種類;
+                    sp_GBCVisaDetail.PK_次別 = vwListItem.PK_次別;
+                    sp_GBCVisaDetail.PK_明細號 = vwListItem.PK_明細號;
+                    sp_GBCVisaDetail.F_科室代碼 = vwListItem.F_科室代碼;
+                    sp_GBCVisaDetail.F_用途別代碼 = vwListItem.F_用途別代碼;
+                    sp_GBCVisaDetail.F_計畫代碼 = vwListItem.F_計畫代碼;
+                    sp_GBCVisaDetail.F_動支金額 = vwListItem.F_動支金額;
+                    sp_GBCVisaDetail.F_製票日 = vwListItem.F_製票日;
+                    sp_GBCVisaDetail.F_是否核定 = vwListItem.F_是否核定;
+                    sp_GBCVisaDetail.F_核定金額 = vwListItem.F_核定金額;
+                    sp_GBCVisaDetail.F_核定日期 = vwListItem.F_核定日期;
+                    sp_GBCVisaDetail.F_摘要 = vwListItem.F_摘要;
+                    sp_GBCVisaDetail.F_受款人 = vwListItem.F_受款人;
+                    sp_GBCVisaDetail.F_受款人編號 = vwListItem.F_受款人編號;
+                    sp_GBCVisaDetail.F_原動支編號 = vwListItem.F_原動支編號;
+                    sp_GBCVisaDetail.F_批號 = vwListItem.F_批號;
+                    try
+                    {
+                        isLog = dao.FindLog(x => x.基金代碼 == sp_GBCVisaDetail.基金代碼 && x.PK_會計年度 == sp_GBCVisaDetail.PK_會計年度 && x.PK_動支編號 == sp_GBCVisaDetail.PK_動支編號 && x.PK_種類 == sp_GBCVisaDetail.PK_種類 && x.PK_次別 == sp_GBCVisaDetail.PK_次別 && x.PK_明細號 == sp_GBCVisaDetail.PK_明細號);
+                        string isPass = jsonDAO.IsPass(x => x.基金代碼 == sp_GBCVisaDetail.基金代碼 && x.PFK_會計年度 == sp_GBCVisaDetail.PK_會計年度 && x.PFK_動支編號 == sp_GBCVisaDetail.PK_動支編號 && x.PFK_種類 == sp_GBCVisaDetail.PK_種類 && x.PFK_次別 == sp_GBCVisaDetail.PK_次別);
+                        if ((isLog > 0) && isPass.Equals("1"))
+                        {
+                            return "此筆資料已轉入過,並且結案。";
+                        }
+                        //else if (((isLog > 0) && isPass.Equals("0")) || (isPass.Equals("0")))
+                        else if (((isLog > 0) && isPass.Equals("0")))
+                        {
+                            dao.Update(sp_GBCVisaDetail);
+                            jsonDAO.DeleteJsonRecord1(sp_GBCVisaDetail);
+                        }
+                        else
+                        {
+                            dao.Insert(sp_GBCVisaDetail);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        return e.Message;
+                    }
+
+                    //計算估列沖銷餘額
+                    var estimateNouNoList = dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == sp_GBCVisaDetail.基金代碼 && x.PK_會計年度 == sp_GBCVisaDetail.PK_會計年度 && x.PK_動支編號 == sp_GBCVisaDetail.PK_動支編號 && x.PK_種類 == "估列").ToList();
+
+                    //找應付沖轉字號
+                    var abateEstimateVouYear = (from estvou in estimateNouNoList select estvou.F_傳票年度).ToList();
+                    var abateEstimateVouNo = (from estvou in estimateNouNoList select estvou.F_傳票號1).ToList();
+                    var abateEstimateVouDtlNo = (from estvou in estimateNouNoList select estvou.F_傳票明細號1).ToList();
+
+                    int abateCnt = 0;
+
+                    傳票明細 vouDtl_D = new 傳票明細()
+                    {
+                        借貸別 = "借",
+                        科目代號 = "2125",
+                        科目名稱 = "應付費用",
+                        摘要 = sp_GBCVisaDetail.F_摘要,
+                        金額 = sp_GBCVisaDetail.F_核定金額,
+                        計畫代碼 = sp_GBCVisaDetail.F_計畫代碼,
+                        用途別代碼 = sp_GBCVisaDetail.F_用途別代碼,
+                        //沖轉字號 = abateEstimateVouYear + "-" + abateEstimateVouNo.ElementAt(abateCnt) + "-" + abateEstimateVouDtlNo.ElementAt(abateCnt),
+                        沖轉字號 = "",
+                        對象代碼 = sp_GBCVisaDetail.F_受款人編號,
+                        對象說明 = sp_GBCVisaDetail.F_受款人,
+                        明細號 = sp_GBCVisaDetail.PK_明細號
+                    };
+                    vouDtlList.Add(vouDtl_D);
+
+                    傳票明細 vouDtl_C = new 傳票明細()
+                    {
+                        借貸別 = "貸",
+                        科目代號 = "5",
+                        科目名稱 = "基金用途",
+                        摘要 = sp_GBCVisaDetail.F_摘要,
+                        金額 = sp_GBCVisaDetail.F_核定金額,
+                        計畫代碼 = sp_GBCVisaDetail.F_計畫代碼,
+                        用途別代碼 = sp_GBCVisaDetail.F_用途別代碼,
+                        沖轉字號 = "",
+                        對象代碼 = sp_GBCVisaDetail.F_受款人編號,
+                        對象說明 = sp_GBCVisaDetail.F_受款人
+                    };
+
+                    //是否為以前年度
+                    if (int.Parse(sp_GBCVisaDetail.PK_動支編號.Substring(0, 3)) < int.Parse(sp_GBCVisaDetail.PK_會計年度))
+                    {
+                        vouDtl_C.科目代號 = "4YY";
+                        vouDtl_C.科目名稱 = "雜項收入";
+                        vouDtl_C.計畫代碼 = "";
+                        vouDtl_C.用途別代碼 = "";
+                    }
+                    vouDtlList.Add(vouDtl_C);
+
+                    傳票受款人 vouPay = new 傳票受款人()
+                    {
+                        統一編號 = sp_GBCVisaDetail.F_受款人編號,
+                        受款人名稱 = sp_GBCVisaDetail.F_受款人,
+                        地址 = "",
+                        實付金額 = sp_GBCVisaDetail.F_核定金額,
+                        銀行代號 = "",
+                        銀行名稱 = "",
+                        銀行帳號 = "",
+                        帳戶名稱 = ""
+                    };
+                    vouPayList.Add(vouPay);
+
+                    abateCnt++;
+
+                    //填傳票明細號1
+                    //dao.FillVouDtl1(vw_GBCVisaDetail.基金代碼, vw_GBCVisaDetail.PK_會計年度, vw_GBCVisaDetail.PK_動支編號, vw_GBCVisaDetail.PK_種類, vw_GBCVisaDetail.PK_次別, vw_GBCVisaDetail.PK_明細號, vouDtlList.Count);
+                }
+                //重新處理受款人清單,如果有重複受款人名稱,則金額加總
+                //var vouPayGroup = from xxx in vouPayList
+                //                  group xxx by new { xxx.統一編號, xxx.受款人名稱, xxx.地址, xxx.銀行代號, xxx.銀行名稱, xxx.銀行帳號, xxx.帳戶名稱 } into g
+                //                  select new { 統一編號 = g.Key.統一編號, 受款人名稱 = g.Key.受款人名稱, 地址 = g.Key.地址, 銀行代號 = g.Key.銀行代號, 銀行名稱 = g.Key.銀行名稱, 銀行帳號 = g.Key.銀行帳號, 帳戶名稱 = g.Key.帳戶名稱, 實付金額 = g.Sum(xxx => xxx.實付金額) };
+                //vouPayList = new List<傳票受款人>();
+                //foreach (var vouPayGroupItem in vouPayGroup)
+                //{
+                //    傳票受款人 vouPay = new 傳票受款人();
+                //    vouPay.統一編號 = vouPayGroupItem.統一編號;
+                //    vouPay.受款人名稱 = vouPayGroupItem.受款人名稱;
+                //    vouPay.地址 = vouPayGroupItem.地址;
+                //    vouPay.實付金額 = vouPayGroupItem.實付金額;
+                //    vouPay.銀行代號 = vouPayGroupItem.銀行代號;
+                //    vouPay.銀行名稱 = vouPayGroupItem.銀行名稱;
+                //    vouPay.銀行帳號 = vouPayGroupItem.銀行帳號;
+                //    vouPay.帳戶名稱 = vouPayGroupItem.帳戶名稱;
+                //    vouPayList.Add(vouPay);
+                //}
+
+                vouMain.傳票種類 = "4";
+                vouMain.製票日期 = "";
+                vouMain.主摘要 = sp_GBCVisaDetail.F_摘要;
+                vouMain.交付方式 = "1";
+
+
+                vouCollection.傳票主檔 = vouMain;
+                vouCollection.傳票明細 = vouDtlList;
+                vouCollection.傳票受款人 = vouPayList;
+
+                vouCollectionList.Add(vouCollection);
+
+                vouTop.基金代碼 = sp_GBCVisaDetail.基金代碼;
+                vouTop.年度 = sp_GBCVisaDetail.PK_會計年度;
+                vouTop.動支編號 = sp_GBCVisaDetail.PK_動支編號;
+                vouTop.種類 = sp_GBCVisaDetail.PK_種類;
+                vouTop.次別 = sp_GBCVisaDetail.PK_次別;
+                vouTop.明細號 = sp_GBCVisaDetail.PK_明細號;
+                vouTop.傳票內容 = vouCollectionList;
+            }
+            #endregion
+
+            #region 預撥收回
+            if ("預撥收回".Equals(accKind))
+            {
+                int prePayMoney = 0;
+                int prePayMoneyAbate = 0;
+                int prePayBalance = 0;
+
+                //貸方要沖銷預付
+                foreach (var vwListItem in vwList)
+                {
+                    sp_GBCVisaDetail.基金代碼 = vwListItem.基金代碼;
+                    sp_GBCVisaDetail.PK_會計年度 = vwListItem.PK_會計年度;
+                    sp_GBCVisaDetail.PK_動支編號 = vwListItem.PK_動支編號;
+                    sp_GBCVisaDetail.PK_種類 = vwListItem.PK_種類;
+                    sp_GBCVisaDetail.PK_次別 = vwListItem.PK_次別;
+                    sp_GBCVisaDetail.PK_明細號 = vwListItem.PK_明細號;
+                    sp_GBCVisaDetail.F_科室代碼 = vwListItem.F_科室代碼;
+                    sp_GBCVisaDetail.F_用途別代碼 = vwListItem.F_用途別代碼;
+                    sp_GBCVisaDetail.F_計畫代碼 = vwListItem.F_計畫代碼;
+                    sp_GBCVisaDetail.F_動支金額 = vwListItem.F_動支金額;
+                    sp_GBCVisaDetail.F_製票日 = vwListItem.F_製票日;
+                    sp_GBCVisaDetail.F_是否核定 = vwListItem.F_是否核定;
+                    sp_GBCVisaDetail.F_核定金額 = vwListItem.F_核定金額;
+                    sp_GBCVisaDetail.F_核定日期 = vwListItem.F_核定日期;
+                    sp_GBCVisaDetail.F_摘要 = vwListItem.F_摘要;
+                    sp_GBCVisaDetail.F_受款人 = vwListItem.F_受款人;
+                    sp_GBCVisaDetail.F_受款人編號 = vwListItem.F_受款人編號;
+                    sp_GBCVisaDetail.F_原動支編號 = vwListItem.F_原動支編號;
+                    sp_GBCVisaDetail.F_批號 = vwListItem.F_批號;
+                    try
+                    {
+                        isLog = dao.FindLog(x => x.基金代碼 == sp_GBCVisaDetail.基金代碼 && x.PK_會計年度 == sp_GBCVisaDetail.PK_會計年度 && x.PK_動支編號 == sp_GBCVisaDetail.PK_動支編號 && x.PK_種類 == sp_GBCVisaDetail.PK_種類 && x.PK_次別 == sp_GBCVisaDetail.PK_次別 && x.PK_明細號 == sp_GBCVisaDetail.PK_明細號);
+                        string isPass = jsonDAO.IsPass(x => x.基金代碼 == sp_GBCVisaDetail.基金代碼 && x.PFK_會計年度 == sp_GBCVisaDetail.PK_會計年度 && x.PFK_動支編號 == sp_GBCVisaDetail.PK_動支編號 && x.PFK_種類 == sp_GBCVisaDetail.PK_種類 && x.PFK_次別 == sp_GBCVisaDetail.PK_次別);
+                        if ((isLog > 0) && isPass.Equals("1"))
+                        {
+                            return "此筆資料已轉入過,並且結案。";
+                        }
+                        //else if (((isLog > 0) && isPass.Equals("0")) || (isPass.Equals("0")))
+                        else if (((isLog > 0) && isPass.Equals("0")))
+                        {
+                            dao.Update(sp_GBCVisaDetail);
+                            jsonDAO.DeleteJsonRecord1(sp_GBCVisaDetail);
+                        }
+                        else
+                        {
+                            dao.Insert(sp_GBCVisaDetail);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        return e.Message;
+                    }
+
+                    //計算預付沖銷餘額
+                    var prePayVouNoList = dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == sp_GBCVisaDetail.基金代碼 && x.PK_動支編號 == sp_GBCVisaDetail.PK_動支編號 && x.PK_種類 == "預付" && x.PK_次別 == sp_GBCVisaDetail.PK_次別.Substring(sp_GBCVisaDetail.PK_次別.IndexOf("-") + 1) && x.F_傳票號1.Length > 0).ToList();
+
+                    //找預付沖轉字號
+                    string prePayVouNo = "";
+                    if (prePayVouNoList.Count > 0)
+                    {
+                        var abatePrePayVouYear = (from prevou in prePayVouNoList select prevou.F_傳票年度).ToList().First();
+                        var abatePrePayVouNo = (from prevou in prePayVouNoList select prevou.F_傳票號1).ToList().First();
+                        var abatePrePayVouDtlNo = (from prevou in prePayVouNoList select prevou.F_傳票明細號1).ToList().First();
+                        prePayVouNo = abatePrePayVouYear + "-" + abatePrePayVouNo + "-" + abatePrePayVouDtlNo;
+                    }
+                    else
+                    {
+                        prePayVouNo = "";
+                    }
+
+                    int abateCnt = 0;
+
+                    傳票明細 vouDtl_C = new 傳票明細()
+                    {
+                        借貸別 = "貸",
+                        科目代號 = "1154",
+                        科目名稱 = "預付費用",
+                        摘要 = sp_GBCVisaDetail.F_摘要,
+                        金額 = sp_GBCVisaDetail.F_核定金額,
+                        計畫代碼 = sp_GBCVisaDetail.F_計畫代碼,
+                        用途別代碼 = sp_GBCVisaDetail.F_用途別代碼,
+                        沖轉字號 = prePayVouNo, //沖轉支出傳票 from prePayNouNoList
+                        對象代碼 = sp_GBCVisaDetail.F_受款人編號,
+                        對象說明 = sp_GBCVisaDetail.F_受款人,
+                        明細號 = sp_GBCVisaDetail.PK_明細號
+                    };
+
+                    //以前年度不要填入計畫科目
+                    if (int.Parse(sp_GBCVisaDetail.PK_動支編號.Substring(0, 3)) < (DateTime.Now.Year - 1911))
+                    {
+                        vouDtl_C.計畫代碼 = "";
+                        vouDtl_C.用途別代碼 = "";
+
+                    }
+
+                    //是否為沖轉以前年度
+                    if (vouDtl_C.沖轉字號 != "")
+                    {
+                        if (int.Parse(vouDtl_C.沖轉字號.Substring(0, 3)) < (DateTime.Now.Year - 1911))
+                        {
+                            vouDtl_C.計畫代碼 = "";
+                            vouDtl_C.用途別代碼 = "";
+                        }
+                    }
+
+                    vouDtlList.Add(vouDtl_C);
+
+                    傳票受款人 vouPay = new 傳票受款人()
+                    {
+                        //統一編號 = vw_GBCVisaDetail.F_受款人編號,
+                        //受款人名稱 = vw_GBCVisaDetail.F_受款人,
+                        //地址 = "",
+                        //實付金額 = vw_GBCVisaDetail.F_核定金額,
+                        //銀行代號 = "",
+                        //銀行名稱 = "",
+                        //銀行帳號 = "",
+                        //帳戶名稱 = ""
+                        統一編號 = "",
+                        受款人名稱 = "",
+                        地址 = "",
+                        實付金額 = 0,
+                        銀行代號 = "",
+                        銀行名稱 = "",
+                        銀行帳號 = "",
+                        帳戶名稱 = ""
+                    };
+                    vouPayList.Add(vouPay);
+
+                    abateCnt++;
+
+                    //填傳票明細號1
+                    //dao.FillVouDtl1(vw_GBCVisaDetail.基金代碼, vw_GBCVisaDetail.PK_會計年度, vw_GBCVisaDetail.PK_動支編號, vw_GBCVisaDetail.PK_種類, vw_GBCVisaDetail.PK_次別, vw_GBCVisaDetail.PK_明細號, vouDtlList.Count);
+                }
+                //重新處理受款人清單,如果有重複受款人名稱,則金額加總
+                var vouPayGroup = from xxx in vouPayList
+                                  group xxx by new { xxx.統一編號, xxx.受款人名稱, xxx.地址, xxx.銀行代號, xxx.銀行名稱, xxx.銀行帳號, xxx.帳戶名稱 } into g
+                                  select new { 統一編號 = g.Key.統一編號, 受款人名稱 = g.Key.受款人名稱, 地址 = g.Key.地址, 銀行代號 = g.Key.銀行代號, 銀行名稱 = g.Key.銀行名稱, 銀行帳號 = g.Key.銀行帳號, 帳戶名稱 = g.Key.帳戶名稱, 實付金額 = g.Sum(xxx => xxx.實付金額) };
+                //vouPayList = new List<傳票受款人>();
+                //foreach (var vouPayGroupItem in vouPayGroup)
+                //{
+                //    傳票受款人 vouPay = new 傳票受款人();
+                //    vouPay.統一編號 = vouPayGroupItem.統一編號;
+                //    vouPay.受款人名稱 = vouPayGroupItem.受款人名稱;
+                //    vouPay.地址 = vouPayGroupItem.地址;
+                //    vouPay.實付金額 = vouPayGroupItem.實付金額;
+                //    vouPay.銀行代號 = vouPayGroupItem.銀行代號;
+                //    vouPay.銀行名稱 = vouPayGroupItem.銀行名稱;
+                //    vouPay.銀行帳號 = vouPayGroupItem.銀行帳號;
+                //    vouPay.帳戶名稱 = vouPayGroupItem.帳戶名稱;
+                //    vouPayList.Add(vouPay);
+                //}
+
+                vouMain.傳票種類 = "1";
+                vouMain.製票日期 = "";
+                vouMain.主摘要 = sp_GBCVisaDetail.F_摘要;
+                vouMain.交付方式 = "1";
+
+                傳票明細 vouDtl_D = new 傳票明細()
+                {
+                    借貸別 = "借",
+                    科目代號 = "11120107",
+                    科目名稱 = "銀行存款",
+                    摘要 = sp_GBCVisaDetail.F_摘要,
+                    金額 = accSumMoney,
+                    計畫代碼 = "",
+                    用途別代碼 = "",
+                    沖轉字號 = "",
+                    對象代碼 = sp_GBCVisaDetail.F_受款人編號,
+                    對象說明 = sp_GBCVisaDetail.F_受款人
+                };
+                vouDtlList.Add(vouDtl_D);
+
+                vouCollection.傳票主檔 = vouMain;
+                vouCollection.傳票明細 = vouDtlList;
+                vouCollection.傳票受款人 = vouPayList;
+                vouCollectionList.Add(vouCollection);
+
+                vouTop.基金代碼 = sp_GBCVisaDetail.基金代碼;
+                vouTop.年度 = sp_GBCVisaDetail.PK_會計年度;
+                vouTop.動支編號 = sp_GBCVisaDetail.PK_動支編號;
+                vouTop.種類 = sp_GBCVisaDetail.PK_種類;
+                vouTop.次別 = sp_GBCVisaDetail.PK_次別;
+                vouTop.明細號 = sp_GBCVisaDetail.PK_明細號;
+                vouTop.傳票內容 = vouCollectionList;
+            }
+            #endregion
+
+            #region 核銷收回
+            if ("核銷收回".Equals(accKind))
+            {
+                foreach (var item in vwList)
+                {
+                    sp_GBCVisaDetail.基金代碼 = item.基金代碼;
+                    sp_GBCVisaDetail.PK_會計年度 = item.PK_會計年度;
+                    sp_GBCVisaDetail.PK_動支編號 = item.PK_動支編號;
+                    sp_GBCVisaDetail.PK_種類 = item.PK_種類;
+                    sp_GBCVisaDetail.PK_次別 = item.PK_次別;
+                    sp_GBCVisaDetail.PK_明細號 = item.PK_明細號;
+                    sp_GBCVisaDetail.F_科室代碼 = item.F_科室代碼;
+                    sp_GBCVisaDetail.F_用途別代碼 = item.F_用途別代碼;
+                    sp_GBCVisaDetail.F_計畫代碼 = item.F_計畫代碼;
+                    sp_GBCVisaDetail.F_動支金額 = item.F_動支金額;
+                    sp_GBCVisaDetail.F_製票日 = item.F_製票日;
+                    sp_GBCVisaDetail.F_是否核定 = item.F_是否核定;
+                    sp_GBCVisaDetail.F_核定金額 = item.F_核定金額;
+                    sp_GBCVisaDetail.F_核定日期 = item.F_核定日期;
+                    sp_GBCVisaDetail.F_摘要 = item.F_摘要;
+                    sp_GBCVisaDetail.F_受款人 = item.F_受款人;
+                    sp_GBCVisaDetail.F_受款人編號 = item.F_受款人編號;
+                    sp_GBCVisaDetail.F_原動支編號 = item.F_原動支編號;
+                    sp_GBCVisaDetail.F_批號 = item.F_批號;
+                    try
+                    {
+                        isLog = dao.FindLog(x => x.基金代碼 == sp_GBCVisaDetail.基金代碼 && x.PK_會計年度 == sp_GBCVisaDetail.PK_會計年度 && x.PK_動支編號 == sp_GBCVisaDetail.PK_動支編號 && x.PK_種類 == sp_GBCVisaDetail.PK_種類 && x.PK_次別 == sp_GBCVisaDetail.PK_次別 && x.PK_明細號 == sp_GBCVisaDetail.PK_明細號);
+                        string isPass = jsonDAO.IsPass(x => x.基金代碼 == sp_GBCVisaDetail.基金代碼 && x.PFK_會計年度 == sp_GBCVisaDetail.PK_會計年度 && x.PFK_動支編號 == sp_GBCVisaDetail.PK_動支編號 && x.PFK_種類 == sp_GBCVisaDetail.PK_種類 && x.PFK_次別 == sp_GBCVisaDetail.PK_次別);
+                        if ((isLog > 0) && isPass.Equals("1"))
+                        {
+                            return "此筆資料已轉入過,並且結案。";
+                        }
+                        //else if (((isLog > 0) && isPass.Equals("0")) || (isPass.Equals("0")))
+                        else if (((isLog > 0) && isPass.Equals("0")))
+                        {
+                            dao.Update(sp_GBCVisaDetail);
+                            jsonDAO.DeleteJsonRecord1(sp_GBCVisaDetail);
+                        }
+                        else
+                        {
+                            dao.Insert(sp_GBCVisaDetail);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        return e.Message;
+                    }
+
+                    //計算估列沖銷餘額
+                    var payVouNoList = dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == sp_GBCVisaDetail.基金代碼 && x.PK_會計年度 == sp_GBCVisaDetail.PK_會計年度 && x.PK_動支編號 == sp_GBCVisaDetail.PK_動支編號 && x.PK_種類 == "估列").ToList();
+
+                    //找應付沖轉字號
+                    var payVouNo = from payvou in payVouNoList select payvou.F_傳票號1;
+                    var payVouDtlNo = from payvou in payVouNoList select payvou.F_傳票明細號1;
+
+                    int abateCnt = 0;
+
+                    傳票明細 vouDtl_C = new 傳票明細()
+                    {
+                        借貸別 = "貸",
+                        科目代號 = "5",
+                        科目名稱 = "基金用途",
+                        摘要 = sp_GBCVisaDetail.F_摘要,
+                        金額 = sp_GBCVisaDetail.F_核定金額,
+                        計畫代碼 = sp_GBCVisaDetail.F_計畫代碼,
+                        用途別代碼 = sp_GBCVisaDetail.F_用途別代碼,
+                        沖轉字號 = payVouNo.ElementAt(abateCnt) + "-" + payVouDtlNo.ElementAt(abateCnt),
+                        對象代碼 = sp_GBCVisaDetail.F_受款人編號,
+                        對象說明 = sp_GBCVisaDetail.F_受款人,
+                        明細號 = sp_GBCVisaDetail.PK_明細號
+                    };
+
+                    if (int.Parse(sp_GBCVisaDetail.PK_動支編號.Substring(0, 3)) < (DateTime.Now.Year - 1911))
+                    {
+                        vouDtl_C.計畫代碼 = "";
+                        vouDtl_C.用途別代碼 = "";
+
+                    }
+
+                    //是否為以前年度
+                    if (int.Parse(sp_GBCVisaDetail.PK_動支編號.Substring(0, 3)) < int.Parse(sp_GBCVisaDetail.PK_會計年度))
+                    {
+
+                        vouDtl_C.科目代號 = "4YY";
+                        vouDtl_C.科目名稱 = "雜項收入";
+                        vouDtl_C.計畫代碼 = "";
+                        vouDtl_C.用途別代碼 = "";
+                        vouDtl_C.沖轉字號 = ""; //不用沖
+                    }
+                    vouDtlList.Add(vouDtl_C);
+
+                    傳票受款人 vouPay = new 傳票受款人()
+                    {
+                        //統一編號 = vw_GBCVisaDetail.F_受款人編號,
+                        //受款人名稱 = vw_GBCVisaDetail.F_受款人,
+                        //地址 = "",
+                        //實付金額 = vw_GBCVisaDetail.F_核定金額,
+                        //銀行代號 = "",
+                        //銀行名稱 = "",
+                        //銀行帳號 = "",
+                        //帳戶名稱 = ""
+                        統一編號 = "",
+                        受款人名稱 = "",
+                        地址 = "",
+                        實付金額 = 0,
+                        銀行代號 = "",
+                        銀行名稱 = "",
+                        銀行帳號 = "",
+                        帳戶名稱 = ""
+                    };
+                    vouPayList.Add(vouPay);
+
+                    abateCnt++;
+
+                    //填傳票明細號1
+                    //dao.FillVouDtl1(vw_GBCVisaDetail.基金代碼, vw_GBCVisaDetail.PK_會計年度, vw_GBCVisaDetail.PK_動支編號, vw_GBCVisaDetail.PK_種類, vw_GBCVisaDetail.PK_次別, vw_GBCVisaDetail.PK_明細號, vouDtlList.Count);
+                }
+                //重新處理受款人清單,如果有重複受款人名稱,則金額加總
+                var vouPayGroup = from xxx in vouPayList
+                                  group xxx by new { xxx.統一編號, xxx.受款人名稱, xxx.地址, xxx.銀行代號, xxx.銀行名稱, xxx.銀行帳號, xxx.帳戶名稱 } into g
+                                  select new { 統一編號 = g.Key.統一編號, 受款人名稱 = g.Key.受款人名稱, 地址 = g.Key.地址, 銀行代號 = g.Key.銀行代號, 銀行名稱 = g.Key.銀行名稱, 銀行帳號 = g.Key.銀行帳號, 帳戶名稱 = g.Key.帳戶名稱, 實付金額 = g.Sum(xxx => xxx.實付金額) };
+                //vouPayList = new List<傳票受款人>();
+                //foreach (var vouPayGroupItem in vouPayGroup)
+                //{
+                //    傳票受款人 vouPay = new 傳票受款人();
+                //    vouPay.統一編號 = vouPayGroupItem.統一編號;
+                //    vouPay.受款人名稱 = vouPayGroupItem.受款人名稱;
+                //    vouPay.地址 = vouPayGroupItem.地址;
+                //    vouPay.實付金額 = vouPayGroupItem.實付金額;
+                //    vouPay.銀行代號 = vouPayGroupItem.銀行代號;
+                //    vouPay.銀行名稱 = vouPayGroupItem.銀行名稱;
+                //    vouPay.銀行帳號 = vouPayGroupItem.銀行帳號;
+                //    vouPay.帳戶名稱 = vouPayGroupItem.帳戶名稱;
+                //    vouPayList.Add(vouPay);
+                //}
+
+                vouMain.傳票種類 = PayVouKind;
+                vouMain.製票日期 = "";
+                vouMain.主摘要 = sp_GBCVisaDetail.F_摘要;
+                vouMain.交付方式 = "1";
+
+                傳票明細 vouDtl_D = new 傳票明細()
+                {
+                    借貸別 = "借",
+                    科目代號 = "11120107",
+                    科目名稱 = "銀行存款",
+                    摘要 = sp_GBCVisaDetail.F_摘要,
+                    金額 = accSumMoney,
+                    計畫代碼 = sp_GBCVisaDetail.F_計畫代碼,
+                    用途別代碼 = sp_GBCVisaDetail.F_用途別代碼,
+                    沖轉字號 = "",
+                    對象代碼 = sp_GBCVisaDetail.F_受款人編號,
+                    對象說明 = sp_GBCVisaDetail.F_受款人
+                };
+                vouDtlList.Add(vouDtl_D);
+
+                vouCollection.傳票主檔 = vouMain;
+                vouCollection.傳票明細 = vouDtlList;
+                vouCollection.傳票受款人 = vouPayList;
+                vouCollectionList.Add(vouCollection);
+
+                vouTop.基金代碼 = sp_GBCVisaDetail.基金代碼;
+                vouTop.年度 = sp_GBCVisaDetail.PK_會計年度;
+                vouTop.動支編號 = sp_GBCVisaDetail.PK_動支編號;
+                vouTop.種類 = sp_GBCVisaDetail.PK_種類;
+                vouTop.次別 = sp_GBCVisaDetail.PK_次別;
+                vouTop.明細號 = sp_GBCVisaDetail.PK_明細號;
+                vouTop.傳票內容 = vouCollectionList;
+            }
+            #endregion
+
+            //紀錄第一張傳票底稿
+            try
+            {
+                jsonDAO.InsertJsonRecord1(sp_GBCVisaDetail, JsonConvert.SerializeObject(vouTop));
+            }
+            catch (Exception e)
+            {
+                return e.Message;
+            }
+            //回傳第一張傳票底稿
+            JSON1 = jsonDAO.FindJSON1(x => x.基金代碼 == sp_GBCVisaDetail.基金代碼 && x.PFK_會計年度 == sp_GBCVisaDetail.PK_會計年度 && x.PFK_動支編號 == sp_GBCVisaDetail.PK_動支編號 && x.PFK_種類 == sp_GBCVisaDetail.PK_種類 && x.PFK_次別 == sp_GBCVisaDetail.PK_次別);
+
+            //若有開立第二張，則紀錄第二張傳票底稿
+            if (vouTop2 != null)
+            {                
+                try
+                {
+                    jsonDAO.InsertJsonRecord2(sp_GBCVisaDetail, JsonConvert.SerializeObject(vouTop2));
+                }
+                catch (Exception e)
+                {
+                    return e.Message;
+                }
+            }
+
+            //return JsonConvert.SerializeObject(JSON1);
+            return JSON1;
+        }
+
+        [WebMethod]
         /// <summary>
         /// 回填傳票號
         /// </summary>
@@ -2125,7 +3614,6 @@ namespace AccWebService
             string isPass = "";
             int count = 0;
 
-
             vouNoJSON = vouNoJSON.Replace(@"\r\n", ""); //清除\r\n              
             vouNoJSON = vouNoJSON.Replace(@"\", "");    //清除\        
             vouNoJSON = vouNoJSON.Replace(@"""[", "["); //將 "[  改為 [
@@ -2142,6 +3630,11 @@ namespace AccWebService
             catch (Exception e)
             {
                 return e.StackTrace;
+            }
+
+            if (fundNo != "040")
+            {
+
             }
 
             string[] strs = acmWordNum.Split('-'); //以"-"區分種類及次號
@@ -2178,7 +3671,7 @@ namespace AccWebService
                 int isOrigNum = dao.GetGBCVisaDetailAbateDetail(x => x.PK_會計年度 == fillVouScript.傳票年度 && x.F_原動支編號 == acmWordNumOut).Count();
                 if (isOrigNum > 0)
                 {
-                    acmWordNumOut = (dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == fundNo && x.F_傳票年度 == fillVouScript.傳票年度 && x.F_原動支編號 == acmWordNumOut))
+                    acmWordNumOut = (dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == fundNo && x.F_原動支編號 == acmWordNumOut && x.PK_種類 == acmKind && x.PK_次別 == acmNo))
                                 .FirstOrDefault().PK_動支編號;
                 }
                 
@@ -2243,8 +3736,8 @@ namespace AccWebService
                     }
                     else if (gbcVisaDetailAbateDetail.基金代碼 == "040")//菸害****尚未加入服務參考****
                     {
-                        HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
-                        ws.FillVouNo(gbcVisaDetailAbateDetail.PK_會計年度, gbcVisaDetailAbateDetail.PK_動支編號, gbcVisaDetailAbateDetail.PK_種類, gbcVisaDetailAbateDetail.PK_次別, gbcVisaDetailAbateDetail.PK_明細號, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1);
+                        //HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
+                        //ws.FillVouNo(gbcVisaDetailAbateDetail.PK_會計年度, gbcVisaDetailAbateDetail.PK_動支編號, gbcVisaDetailAbateDetail.PK_種類, gbcVisaDetailAbateDetail.PK_次別, gbcVisaDetailAbateDetail.PK_明細號, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1);
                     }
                     else if (gbcVisaDetailAbateDetail.基金代碼 == "090")//家防服務參考
                     {
@@ -2288,13 +3781,13 @@ namespace AccWebService
 
                 return yearList;
             }
-            else if (fundNo == "040")//菸害****尚未加入服務參考****
-            {
-                HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
-                List<string> yearList = new List<string>(ws.GetYear());
+            //else if (fundNo == "040")//菸害****尚未加入服務參考****
+            //{
+            //    HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
+            //    List<string> yearList = new List<string>(ws.GetYear());
 
-                return yearList;
-            }
+            //    return yearList;
+            //}
             else if (fundNo == "090")//家防服務參考
             {
                 DVGBCWebService.GBCWebService ws = new DVGBCWebService.GBCWebService();
@@ -2341,14 +3834,14 @@ namespace AccWebService
 
                 return acmNoList;
             }
-            else if (fundNo == "040")//菸害****尚未加入服務參考****
-            {
-                HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
-                List<string> acmNoList = new List<string>(
-                    ws.GetAcmWordNum(accYear));
+            //else if (fundNo == "040")//菸害****尚未加入服務參考****
+            //{
+            //    HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
+            //    List<string> acmNoList = new List<string>(
+            //        ws.GetAcmWordNum(accYear));
 
-                return acmNoList;
-            }
+            //    return acmNoList;
+            //}
             else if (fundNo == "090")//家防服務參考
             {
                 DVGBCWebService.GBCWebService ws = new DVGBCWebService.GBCWebService();
@@ -2397,13 +3890,13 @@ namespace AccWebService
                     ws.GetAccKind(accYear, acmWordNum));
                 return accKindList;
             }
-            else if (fundNo == "040")//菸害****尚未加入服務參考****
-            {
-                HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
-                List<string> accKindList = new List<string>(
-                    ws.GetAccKind(accYear, acmWordNum));
-                return accKindList;
-            }
+            //else if (fundNo == "040")//菸害****尚未加入服務參考****
+            //{
+            //    HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
+            //    List<string> accKindList = new List<string>(
+            //        ws.GetAccKind(accYear, acmWordNum));
+            //    return accKindList;
+            //}
             else if (fundNo == "090")//家防服務參考
             {
                 DVGBCWebService.GBCWebService ws = new DVGBCWebService.GBCWebService();
@@ -2451,13 +3944,13 @@ namespace AccWebService
                     ws.GetAccCount(accYear, acmWordNum, accKind));
                 return accDetailList;
             }
-            else if (fundNo == "040")//菸害****尚未加入服務參考****
-            {
-                HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
-                List<string> accDetailList = new List<string>(
-                    ws.GetAccCount(accYear, acmWordNum, accKind));
-                return accDetailList;
-            }
+            //else if (fundNo == "040")//菸害****尚未加入服務參考****
+            //{
+            //    HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
+            //    List<string> accDetailList = new List<string>(
+            //        ws.GetAccCount(accYear, acmWordNum, accKind));
+            //    return accDetailList;
+            //}
             else if (fundNo == "090")//家防服務參考
             {
                 DVGBCWebService.GBCWebService ws = new DVGBCWebService.GBCWebService();
@@ -2506,13 +3999,13 @@ namespace AccWebService
                     ws.GetAccDetail(accYear, acmWordNum, accKind, accCount));
                 return accDetailList;
             }
-            else if (fundNo == "040")//菸害****尚未加入服務參考****
-            {
-                HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
-                List<string> accDetailList = new List<string>(
-                    ws.GetAccDetail(accYear, acmWordNum, accKind, accCount));
-                return accDetailList;
-            }
+            //else if (fundNo == "040")//菸害****尚未加入服務參考****
+            //{
+            //    HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
+            //    List<string> accDetailList = new List<string>(
+            //        ws.GetAccDetail(accYear, acmWordNum, accKind, accCount));
+            //    return accDetailList;
+            //}
             else if (fundNo == "090")//家防服務參考
             {
                 DVGBCWebService.GBCWebService ws = new DVGBCWebService.GBCWebService();
@@ -2561,12 +4054,12 @@ namespace AccWebService
                 string getGBCVisaDetail = ws.GetByPrimaryKey(accYear, acmWordNum, accKind, accCount);
                 return getGBCVisaDetail;
             }
-            else if (fundNo == "040")//菸害****尚未加入服務參考****
-            {
-                HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
-                string getGBCVisaDetail = ws.GetByPrimaryKey(accYear, acmWordNum, accKind, accCount);
-                return getGBCVisaDetail;
-            }
+            //else if (fundNo == "040")//菸害****尚未加入服務參考****
+            //{
+            //    HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
+            //    string getGBCVisaDetail = ws.GetByPrimaryKey(accYear, acmWordNum, accKind, accCount);
+            //    return getGBCVisaDetail;
+            //}
             else if (fundNo == "090")//家防服務參考
             {
                 DVGBCWebService.GBCWebService ws = new DVGBCWebService.GBCWebService();
@@ -2629,20 +4122,20 @@ namespace AccWebService
 
                 return resultList;
             }
-            else if (fundNo == "040")//菸害****尚未加入服務參考****
-            {
-                HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
+            //else if (fundNo == "040")//菸害****尚未加入服務參考****
+            //{
+            //    HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
 
-                List<string> accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch));
-                List<string> resultList = new List<string>();
+            //    List<string> accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch));
+            //    List<string> resultList = new List<string>();
 
-                foreach (var accDetailListItem in accDetailList)
-                {
-                    resultList.Add(GetVw_GBCVisaDetail(fundNo, accDetailListItem));
-                }
+            //    foreach (var accDetailListItem in accDetailList)
+            //    {
+            //        resultList.Add(GetVw_GBCVisaDetail(fundNo, accDetailListItem));
+            //    }
 
-                return resultList;
-            }
+            //    return resultList;
+            //}
             else if (fundNo == "090")//家防服務參考
             {
                 DVGBCWebService.GBCWebService ws = new DVGBCWebService.GBCWebService();
@@ -2687,6 +4180,27 @@ namespace AccWebService
                 return null;
             }
         }
+
+        [WebMethod]
+        public List<string> GetAccKindForHPA(string fundNo, string accYear, string barCode)
+        {
+            ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateServerCertificate);
+            //先判斷基金代號
+            if (fundNo == "040")//菸害****尚未加入服務參考****
+            {
+                HPAGBCWebService.HPAGBCWebService ws = new HPAGBCWebService.HPAGBCWebService();
+
+                List<string> AccKindList = new List<string>();
+                AccKindList = JsonConvert.DeserializeObject<List<string>>(ws.GetAccKind(accYear, barCode));
+
+                return AccKindList;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         #endregion
     }
 }

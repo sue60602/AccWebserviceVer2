@@ -123,11 +123,11 @@
       <Generator>MSDiscoCodeGenerator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
-    <None Include="Web References\HPAGBCWebService\GBCWebService.wsdl" />
-    <Content Include="Web References\HPAGBCWebService\Reference.map">
+    <None Include="Web References\HPAGBCWebService\HPAGBCWebService.wsdl" />
+    <None Include="Web References\HPAGBCWebService\Reference.map">
       <Generator>MSDiscoCodeGenerator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
-    </Content>
+    </None>
     <None Include="Web References\LCGBCWebService\GBCWebService.wsdl" />
     <None Include="Web References\LCGBCWebService\Reference.map">
       <Generator>MSDiscoCodeGenerator</Generator>
@@ -168,7 +168,7 @@
     <None Include="Web References\BAGBCWebService\GBCWebService.disco" />
     <None Include="Web References\DVGBCWebService\GBCWebService.disco" />
     <None Include="Web References\LCGBCWebService\GBCWebService.disco" />
-    <None Include="Web References\HPAGBCWebService\GBCWebService.disco" />
+    <None Include="Web References\HPAGBCWebService\HPAGBCWebService.disco" />
     <Content Include="Web.config" />
     <None Include="Web References\GBCWebService\GBCWebService.wsdl" />
     <None Include="Web References\GBCWebService\Reference.map">
@@ -667,6 +667,7 @@
     <Compile Include="Model\AccScriptJSON.cs" />
     <Compile Include="Model\VouDetailDAO.cs" />
     <Compile Include="Model\VouMainDAO.cs" />
+    <Compile Include="Model\Sp_GBCVisaDetail.cs" />
     <Compile Include="Model\Vw_GBCVisaDetail.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
@@ -737,16 +738,16 @@
       <CachedAppSettingsObjectName>Settings</CachedAppSettingsObjectName>
       <CachedSettingsPropName>AccWebService_GBCWebService_GBCWebService</CachedSettingsPropName>
     </WebReferenceUrl>
-    <WebReferenceUrl Include="http://59.125.117.100/HPAGBCWebService/GBCWebService.asmx">
+    <WebReferenceUrl Include="http://59.125.117.100/HPAGBCWebService/HPAGBCWebService.asmx">
       <UrlBehavior>Dynamic</UrlBehavior>
       <RelPath>Web References\HPAGBCWebService\</RelPath>
-      <UpdateFromURL>http://59.125.117.100/HPAGBCWebService/GBCWebService.asmx</UpdateFromURL>
+      <UpdateFromURL>http://59.125.117.100/HPAGBCWebService/HPAGBCWebService.asmx</UpdateFromURL>
       <ServiceLocationURL>
       </ServiceLocationURL>
       <CachedDynamicPropName>
       </CachedDynamicPropName>
       <CachedAppSettingsObjectName>Settings</CachedAppSettingsObjectName>
-      <CachedSettingsPropName>AccWebService_HPAGBCWebService_GBCWebService</CachedSettingsPropName>
+      <CachedSettingsPropName>AccWebService_HPAGBCWebService_HPAGBCWebService</CachedSettingsPropName>
     </WebReferenceUrl>
     <WebReferenceUrl Include="http://59.125.117.100/LCGBCWebService/GBCWebService.asmx">
       <UrlBehavior>Dynamic</UrlBehavior>

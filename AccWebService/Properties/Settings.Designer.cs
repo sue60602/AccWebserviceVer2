@@ -66,10 +66,10 @@ namespace AccWebService.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.WebServiceUrl)]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://59.125.117.100/HPAGBCWebService/GBCWebService.asmx")]
-        public string AccWebService_HPAGBCWebService_GBCWebService {
+        [global::System.Configuration.DefaultSettingValueAttribute("http://59.125.117.100/HPAGBCWebService/HPAGBCWebService.asmx")]
+        public string AccWebService_HPAGBCWebService_HPAGBCWebService {
             get {
-                return ((string)(this["AccWebService_HPAGBCWebService_GBCWebService"]));
+                return ((string)(this["AccWebService_HPAGBCWebService_HPAGBCWebService"]));
             }
         }
     }
