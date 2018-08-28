@@ -57,6 +57,7 @@ namespace AccWebService.Model
             gbcJSONRecord.PFK_種類 = vw_GBCVisaDetail.PK_種類;
             gbcJSONRecord.PFK_次別 = vw_GBCVisaDetail.PK_次別;
             gbcJSONRecord.傳票JSON1 = vouJoson;
+            gbcJSONRecord.是否結案 = "0";
 
             db.GBCJSONRecord.Add(gbcJSONRecord);
             db.SaveChanges();
@@ -134,5 +135,34 @@ namespace AccWebService.Model
 
             db.SaveChanges();
         }
+
+        public void UpdatePassFlgForEstimate(string 基金代碼, string 會計年度, string 次別)
+        {
+            var getGBCJSONRecord = from s1 in db.GBCJSONRecord
+                                  .Where(x => x.基金代碼 == 基金代碼 && x.PFK_會計年度 == 會計年度 && x.PFK_種類 == "估列" && x.PFK_次別 == 次別).ToList()
+                                              select s1;
+
+            foreach (var getGBCJSONRecordItem in getGBCJSONRecord)
+            {
+                db.GBCJSONRecord.Remove(getGBCJSONRecordItem);
+                db.SaveChanges();
+
+                getGBCJSONRecordItem.是否結案 = "1";
+                db.GBCJSONRecord.Add(getGBCJSONRecordItem);
+
+                db.SaveChanges();
+            }
+        }
+
+        //public void UpdatePassFlgForEstimate(string 基金代碼, string 會計年度, string 次別)
+        //{
+        //    var getOne = (from s1 in db.GBCJSONRecord select s1)
+        //    .Where(x => x.基金代碼 == 基金代碼 && x.PFK_會計年度 == 會計年度 && x.PFK_種類 == "估列" && x.PFK_次別 == 次別)
+        //    .FirstOrDefault();
+
+        //    getOne.是否結案 = "1";
+
+        //    db.SaveChanges();
+        //}
     }
 }

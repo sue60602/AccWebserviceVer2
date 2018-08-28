@@ -2,9 +2,6 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="AccWebService.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="AccWebService_GBCWebService_GBCWebService" Type="(Web Service URL)" Scope="Application">
-      <Value Profile="(Default)">http://59.125.117.100/GBCWebService/GBCWebService.asmx</Value>
-    </Setting>
     <Setting Name="AccWebService_BAGBCWebService_GBCWebService" Type="(Web Service URL)" Scope="Application">
       <Value Profile="(Default)">http://59.125.117.100/BAGBCWebService/GBCWebService.asmx</Value>
     </Setting>
@@ -13,6 +10,9 @@
     </Setting>
     <Setting Name="AccWebService_LCGBCWebService_GBCWebService" Type="(Web Service URL)" Scope="Application">
       <Value Profile="(Default)">http://59.125.117.100/LCGBCWebService/GBCWebService.asmx</Value>
+    </Setting>
+    <Setting Name="AccWebService_GBCWebService_GBCWebService" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">http://59.125.117.100/GBCWebService/GBCWebService.asmx</Value>
     </Setting>
     <Setting Name="AccWebService_HPAGBCWebService_HPAGBCWebService" Type="(Web Service URL)" Scope="Application">
       <Value Profile="(Default)">http://59.125.117.100/HPAGBCWebService/HPAGBCWebService.asmx</Value>

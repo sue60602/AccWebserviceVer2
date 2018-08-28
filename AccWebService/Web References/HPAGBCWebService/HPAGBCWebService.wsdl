@@ -33,6 +33,60 @@
           </s:sequence>
         </s:complexType>
       </s:element>
+      <s:element name="FillVouNo">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="accYear" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="acmWordNum" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="accKind" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="accCount" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="accDetail" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="vouNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="vouDate" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="passNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="passDate" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="FillVouNoResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="FillVouNoResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetDataExchangeVouMain">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="AccYear" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="State" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Memo" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="StartDate" type="s:dateTime" />
+            <s:element minOccurs="1" maxOccurs="1" name="EndDate" type="s:dateTime" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetDataExchangeVouMainResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetDataExchangeVouMainResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="InsertVouDataFromNPSF">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="VouDataJSON" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="InsertVouDataFromNPSFResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="InsertVouDataFromNPSFResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
     </s:schema>
   </wsdl:types>
   <wsdl:message name="GetAccKindSoapIn">
@@ -47,6 +101,24 @@
   <wsdl:message name="GetSP_GBCVisaDetailJSONSoapOut">
     <wsdl:part name="parameters" element="tns:GetSP_GBCVisaDetailJSONResponse" />
   </wsdl:message>
+  <wsdl:message name="FillVouNoSoapIn">
+    <wsdl:part name="parameters" element="tns:FillVouNo" />
+  </wsdl:message>
+  <wsdl:message name="FillVouNoSoapOut">
+    <wsdl:part name="parameters" element="tns:FillVouNoResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetDataExchangeVouMainSoapIn">
+    <wsdl:part name="parameters" element="tns:GetDataExchangeVouMain" />
+  </wsdl:message>
+  <wsdl:message name="GetDataExchangeVouMainSoapOut">
+    <wsdl:part name="parameters" element="tns:GetDataExchangeVouMainResponse" />
+  </wsdl:message>
+  <wsdl:message name="InsertVouDataFromNPSFSoapIn">
+    <wsdl:part name="parameters" element="tns:InsertVouDataFromNPSF" />
+  </wsdl:message>
+  <wsdl:message name="InsertVouDataFromNPSFSoapOut">
+    <wsdl:part name="parameters" element="tns:InsertVouDataFromNPSFResponse" />
+  </wsdl:message>
   <wsdl:portType name="HPAGBCWebServiceSoap">
     <wsdl:operation name="GetAccKind">
       <wsdl:input message="tns:GetAccKindSoapIn" />
@@ -55,6 +127,18 @@
     <wsdl:operation name="GetSP_GBCVisaDetailJSON">
       <wsdl:input message="tns:GetSP_GBCVisaDetailJSONSoapIn" />
       <wsdl:output message="tns:GetSP_GBCVisaDetailJSONSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="FillVouNo">
+      <wsdl:input message="tns:FillVouNoSoapIn" />
+      <wsdl:output message="tns:FillVouNoSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetDataExchangeVouMain">
+      <wsdl:input message="tns:GetDataExchangeVouMainSoapIn" />
+      <wsdl:output message="tns:GetDataExchangeVouMainSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="InsertVouDataFromNPSF">
+      <wsdl:input message="tns:InsertVouDataFromNPSFSoapIn" />
+      <wsdl:output message="tns:InsertVouDataFromNPSFSoapOut" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="HPAGBCWebServiceSoap" type="tns:HPAGBCWebServiceSoap">
@@ -77,6 +161,33 @@
         <soap:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
+    <wsdl:operation name="FillVouNo">
+      <soap:operation soapAction="http://tempuri.org/FillVouNo" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDataExchangeVouMain">
+      <soap:operation soapAction="http://tempuri.org/GetDataExchangeVouMain" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="InsertVouDataFromNPSF">
+      <soap:operation soapAction="http://tempuri.org/InsertVouDataFromNPSF" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
   </wsdl:binding>
   <wsdl:binding name="HPAGBCWebServiceSoap12" type="tns:HPAGBCWebServiceSoap">
     <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
@@ -91,6 +202,33 @@
     </wsdl:operation>
     <wsdl:operation name="GetSP_GBCVisaDetailJSON">
       <soap12:operation soapAction="http://tempuri.org/GetSP_GBCVisaDetailJSON" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="FillVouNo">
+      <soap12:operation soapAction="http://tempuri.org/FillVouNo" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDataExchangeVouMain">
+      <soap12:operation soapAction="http://tempuri.org/GetDataExchangeVouMain" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="InsertVouDataFromNPSF">
+      <soap12:operation soapAction="http://tempuri.org/InsertVouDataFromNPSF" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>

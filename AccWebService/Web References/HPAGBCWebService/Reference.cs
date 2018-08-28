@@ -23,7 +23,7 @@ namespace AccWebService.HPAGBCWebService {
     
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2556.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Web.Services.WebServiceBindingAttribute(Name="HPAGBCWebServiceSoap", Namespace="http://tempuri.org/")]
@@ -32,6 +32,12 @@ namespace AccWebService.HPAGBCWebService {
         private System.Threading.SendOrPostCallback GetAccKindOperationCompleted;
         
         private System.Threading.SendOrPostCallback GetSP_GBCVisaDetailJSONOperationCompleted;
+        
+        private System.Threading.SendOrPostCallback FillVouNoOperationCompleted;
+        
+        private System.Threading.SendOrPostCallback GetDataExchangeVouMainOperationCompleted;
+        
+        private System.Threading.SendOrPostCallback InsertVouDataFromNPSFOperationCompleted;
         
         private bool useDefaultCredentialsSetExplicitly;
         
@@ -76,6 +82,15 @@ namespace AccWebService.HPAGBCWebService {
         
         /// <remarks/>
         public event GetSP_GBCVisaDetailJSONCompletedEventHandler GetSP_GBCVisaDetailJSONCompleted;
+        
+        /// <remarks/>
+        public event FillVouNoCompletedEventHandler FillVouNoCompleted;
+        
+        /// <remarks/>
+        public event GetDataExchangeVouMainCompletedEventHandler GetDataExchangeVouMainCompleted;
+        
+        /// <remarks/>
+        public event InsertVouDataFromNPSFCompletedEventHandler InsertVouDataFromNPSFCompleted;
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/GetAccKind", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
@@ -142,6 +157,117 @@ namespace AccWebService.HPAGBCWebService {
         }
         
         /// <remarks/>
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/FillVouNo", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public string FillVouNo(string accYear, string acmWordNum, string accKind, string accCount, string accDetail, string vouNo, string vouDate, string passNo, string passDate) {
+            object[] results = this.Invoke("FillVouNo", new object[] {
+                        accYear,
+                        acmWordNum,
+                        accKind,
+                        accCount,
+                        accDetail,
+                        vouNo,
+                        vouDate,
+                        passNo,
+                        passDate});
+            return ((string)(results[0]));
+        }
+        
+        /// <remarks/>
+        public void FillVouNoAsync(string accYear, string acmWordNum, string accKind, string accCount, string accDetail, string vouNo, string vouDate, string passNo, string passDate) {
+            this.FillVouNoAsync(accYear, acmWordNum, accKind, accCount, accDetail, vouNo, vouDate, passNo, passDate, null);
+        }
+        
+        /// <remarks/>
+        public void FillVouNoAsync(string accYear, string acmWordNum, string accKind, string accCount, string accDetail, string vouNo, string vouDate, string passNo, string passDate, object userState) {
+            if ((this.FillVouNoOperationCompleted == null)) {
+                this.FillVouNoOperationCompleted = new System.Threading.SendOrPostCallback(this.OnFillVouNoOperationCompleted);
+            }
+            this.InvokeAsync("FillVouNo", new object[] {
+                        accYear,
+                        acmWordNum,
+                        accKind,
+                        accCount,
+                        accDetail,
+                        vouNo,
+                        vouDate,
+                        passNo,
+                        passDate}, this.FillVouNoOperationCompleted, userState);
+        }
+        
+        private void OnFillVouNoOperationCompleted(object arg) {
+            if ((this.FillVouNoCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.FillVouNoCompleted(this, new FillVouNoCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/GetDataExchangeVouMain", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public string GetDataExchangeVouMain(string AccYear, string State, string Memo, System.DateTime StartDate, System.DateTime EndDate) {
+            object[] results = this.Invoke("GetDataExchangeVouMain", new object[] {
+                        AccYear,
+                        State,
+                        Memo,
+                        StartDate,
+                        EndDate});
+            return ((string)(results[0]));
+        }
+        
+        /// <remarks/>
+        public void GetDataExchangeVouMainAsync(string AccYear, string State, string Memo, System.DateTime StartDate, System.DateTime EndDate) {
+            this.GetDataExchangeVouMainAsync(AccYear, State, Memo, StartDate, EndDate, null);
+        }
+        
+        /// <remarks/>
+        public void GetDataExchangeVouMainAsync(string AccYear, string State, string Memo, System.DateTime StartDate, System.DateTime EndDate, object userState) {
+            if ((this.GetDataExchangeVouMainOperationCompleted == null)) {
+                this.GetDataExchangeVouMainOperationCompleted = new System.Threading.SendOrPostCallback(this.OnGetDataExchangeVouMainOperationCompleted);
+            }
+            this.InvokeAsync("GetDataExchangeVouMain", new object[] {
+                        AccYear,
+                        State,
+                        Memo,
+                        StartDate,
+                        EndDate}, this.GetDataExchangeVouMainOperationCompleted, userState);
+        }
+        
+        private void OnGetDataExchangeVouMainOperationCompleted(object arg) {
+            if ((this.GetDataExchangeVouMainCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.GetDataExchangeVouMainCompleted(this, new GetDataExchangeVouMainCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/InsertVouDataFromNPSF", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public string InsertVouDataFromNPSF(string VouDataJSON) {
+            object[] results = this.Invoke("InsertVouDataFromNPSF", new object[] {
+                        VouDataJSON});
+            return ((string)(results[0]));
+        }
+        
+        /// <remarks/>
+        public void InsertVouDataFromNPSFAsync(string VouDataJSON) {
+            this.InsertVouDataFromNPSFAsync(VouDataJSON, null);
+        }
+        
+        /// <remarks/>
+        public void InsertVouDataFromNPSFAsync(string VouDataJSON, object userState) {
+            if ((this.InsertVouDataFromNPSFOperationCompleted == null)) {
+                this.InsertVouDataFromNPSFOperationCompleted = new System.Threading.SendOrPostCallback(this.OnInsertVouDataFromNPSFOperationCompleted);
+            }
+            this.InvokeAsync("InsertVouDataFromNPSF", new object[] {
+                        VouDataJSON}, this.InsertVouDataFromNPSFOperationCompleted, userState);
+        }
+        
+        private void OnInsertVouDataFromNPSFOperationCompleted(object arg) {
+            if ((this.InsertVouDataFromNPSFCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.InsertVouDataFromNPSFCompleted(this, new InsertVouDataFromNPSFCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
         public new void CancelAsync(object userState) {
             base.CancelAsync(userState);
         }
@@ -161,11 +287,11 @@ namespace AccWebService.HPAGBCWebService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2556.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
     public delegate void GetAccKindCompletedEventHandler(object sender, GetAccKindCompletedEventArgs e);
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2556.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     public partial class GetAccKindCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
@@ -187,11 +313,11 @@ namespace AccWebService.HPAGBCWebService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2556.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
     public delegate void GetSP_GBCVisaDetailJSONCompletedEventHandler(object sender, GetSP_GBCVisaDetailJSONCompletedEventArgs e);
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2556.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     public partial class GetSP_GBCVisaDetailJSONCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
@@ -199,6 +325,84 @@ namespace AccWebService.HPAGBCWebService {
         private object[] results;
         
         internal GetSP_GBCVisaDetailJSONCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
+                base(exception, cancelled, userState) {
+            this.results = results;
+        }
+        
+        /// <remarks/>
+        public string Result {
+            get {
+                this.RaiseExceptionIfNecessary();
+                return ((string)(this.results[0]));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
+    public delegate void FillVouNoCompletedEventHandler(object sender, FillVouNoCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class FillVouNoCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
+        
+        private object[] results;
+        
+        internal FillVouNoCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
+                base(exception, cancelled, userState) {
+            this.results = results;
+        }
+        
+        /// <remarks/>
+        public string Result {
+            get {
+                this.RaiseExceptionIfNecessary();
+                return ((string)(this.results[0]));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
+    public delegate void GetDataExchangeVouMainCompletedEventHandler(object sender, GetDataExchangeVouMainCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class GetDataExchangeVouMainCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
+        
+        private object[] results;
+        
+        internal GetDataExchangeVouMainCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
+                base(exception, cancelled, userState) {
+            this.results = results;
+        }
+        
+        /// <remarks/>
+        public string Result {
+            get {
+                this.RaiseExceptionIfNecessary();
+                return ((string)(this.results[0]));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
+    public delegate void InsertVouDataFromNPSFCompletedEventHandler(object sender, InsertVouDataFromNPSFCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class InsertVouDataFromNPSFCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
+        
+        private object[] results;
+        
+        internal InsertVouDataFromNPSFCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
                 base(exception, cancelled, userState) {
             this.results = results;
         }

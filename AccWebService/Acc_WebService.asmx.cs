@@ -2116,8 +2116,9 @@ namespace AccWebService
             return JSON1;
         }
 
+        #region 菸金用WebService
         [WebMethod]
-        ///菸金用
+        ///菸金用傳票就源
         public string GetSP_HPAGBCVisaDetail(string fundNo,string accYear, string acmWordNum, string AccType)
         {
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateServerCertificate);
@@ -2169,6 +2170,11 @@ namespace AccWebService
             catch (Exception e)
             {
                 return JSONReturn;
+            }
+
+            if (JSONReturn.Trim() == "[]")
+            {
+                return "查無此動支編號資料，請確認是否已審核。";
             }
 
             var accKindList = from acckind in vwList select acckind.PK_種類;//取種類集合
@@ -3592,6 +3598,32 @@ namespace AccWebService
         }
 
         [WebMethod]
+        //菸金用出納介接
+        public string GetDataExchangeVouMain(string AccYear, string State, string Memo, DateTime StartDate, DateTime EndDate)
+        {
+            ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateServerCertificate);
+
+            //宣告接收從菸金出納端取得之JSON字串
+            string JSONReturn = "";
+
+            HPAGBCWebService.HPAGBCWebService ws = new HPAGBCWebService.HPAGBCWebService();
+            JSONReturn = ws.GetDataExchangeVouMain(AccYear, State, Memo, StartDate, EndDate); //呼叫預控的服務,取得此動支編號的view資料
+            return JSONReturn;
+        }
+
+        [WebMethod]
+        //遞送出納交換區
+        public string PostVouDataToCashier(string VouJSON)
+        {
+            string result = "";
+            HPAGBCWebService.HPAGBCWebService ws = new HPAGBCWebService.HPAGBCWebService();
+            result = ws.InsertVouDataFromNPSF(VouJSON);
+
+            return result;
+        }
+
+        #endregion
+        [WebMethod]
         /// <summary>
         /// 回填傳票號
         /// </summary>
@@ -3630,12 +3662,7 @@ namespace AccWebService
             catch (Exception e)
             {
                 return e.StackTrace;
-            }
-
-            if (fundNo != "040")
-            {
-
-            }
+            }            
 
             string[] strs = acmWordNum.Split('-'); //以"-"區分種類及次號
             string acmWordNumOut = strs[0]; //動支編號(8碼)
@@ -3664,11 +3691,17 @@ namespace AccWebService
                     acmKind = "無";
                     break;
             }
-            string acmNo = strs[2]; //次別           
+            string acmNo = strs[2]; //次別 
+
+            if (fundNo == "040")
+            {
+                //菸害基金的種類已經寫在BarCode裡了
+                acmKind = strs[3];
+            }
 
             if (int.Parse(acmWordNumOut.Substring(0, 3)) < DateTime.Now.Year - 1911)
             {
-                int isOrigNum = dao.GetGBCVisaDetailAbateDetail(x => x.PK_會計年度 == fillVouScript.傳票年度 && x.F_原動支編號 == acmWordNumOut).Count();
+                int isOrigNum = dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == fundNo && x.PK_會計年度 == fillVouScript.傳票年度 && x.F_原動支編號 == acmWordNumOut).Count();
                 if (isOrigNum > 0)
                 {
                     acmWordNumOut = (dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == fundNo && x.F_原動支編號 == acmWordNumOut && x.PK_種類 == acmKind && x.PK_次別 == acmNo))
@@ -3698,66 +3731,84 @@ namespace AccWebService
                 gbcVisaDetailAbateDetail.PK_明細號 = 傳票明細Item.明細號;
                 gbcVisaDetailAbateDetail.F_傳票明細號1 = int.Parse(傳票明細Item.傳票明細號);
 
-                if ((isVouNo1 == null) && (isPass == "0")) //傳票1未回填 AND 未結案 --回填至傳票1
+                if (傳票明細Item.明細號.Trim() != "")
                 {
-                    dao.UpdateVouNo1(gbcVisaDetailAbateDetail);
-                    count++;
-                    if ((isJSON2.Trim().Length == 0) && (count == fillVouScript.傳票明細.Count) && (傳票明細Item.明細號.Trim().Length > 1))
-                    {
-                        jsonDAO.UpdatePassFlg(fundNo, fillVouScript.傳票年度, acmWordNumOut, acmKind, acmNo);
-                    }
-                }
-                else if ((isVouNo1 != null) && (isPass == "0"))//傳票1已回填 AND 未結案 --回填至傳票2
-                {
-                    dao.UpdateVouNo2(gbcVisaDetailAbateDetail);
-                    isVouNo2 = dao.IsVouNo2(fundNo, fillVouScript.傳票年度, acmWordNumOut, acmKind, acmNo, 傳票明細Item.明細號);
-                    if (isVouNo2 != null)
-                    {
-                        jsonDAO.UpdatePassFlg(fundNo, fillVouScript.傳票年度, acmWordNumOut, acmKind, acmNo);
-                    }                    
-                }
-                else
-                {
-                    return acmWordNumOut + "-" + acmKind + "-" + acmNo + "...回填失敗!  請確認是否已回填完畢。";
-                }
 
-                #region 傳票號回寫至預控系統
-                //傳票號回寫至預控系統
-                //由Web.Config來開關是否回填至預控系統
-                string isFillToGBC = WebConfigurationManager.AppSettings["isFillToGBC"];
+                    if ((isVouNo1 == null) && (isPass == "0")) //傳票1未回填 AND 未結案 --回填至傳票1
+                    {
+                        dao.UpdateVouNo1(gbcVisaDetailAbateDetail);
+                        count++;
+                        if ((isJSON2.Trim().Length == 0) && (count == fillVouScript.傳票明細.Count) && (傳票明細Item.明細號.Trim().Length > 0))
+                        {
+                            jsonDAO.UpdatePassFlg(fundNo, fillVouScript.傳票年度, acmWordNumOut, acmKind, acmNo);
+                        }
+                    }
+                    else if ((isVouNo1 != null) && (isPass == "0"))//傳票1已回填 AND 未結案 --回填至傳票2
+                    {
+                        dao.UpdateVouNo2(gbcVisaDetailAbateDetail);
+                        isVouNo2 = dao.IsVouNo2(fundNo, fillVouScript.傳票年度, acmWordNumOut, acmKind, acmNo, 傳票明細Item.明細號);
+                        if (isVouNo2 != null)
+                        {
+                            jsonDAO.UpdatePassFlg(fundNo, fillVouScript.傳票年度, acmWordNumOut, acmKind, acmNo);
+                        }
+                    }
+                    else
+                    {
+                        return acmWordNumOut + "-" + acmKind + "-" + acmNo + "...回填失敗!  請確認是否已回填完畢。";
+                    }
 
-                if ((isFillToGBC.Trim()).Equals("1"))
-                {
-                    //判斷基金代號,回填至對應的預控系統(GBC)
-                    if (gbcVisaDetailAbateDetail.基金代碼 == "010")//醫發服務參考
+                    #region 傳票號回寫至預控系統
+                    //傳票號回寫至預控系統
+                    //由Web.Config來開關是否回填至預控系統
+                    string isFillToGBC = WebConfigurationManager.AppSettings["isFillToGBC"];
+
+                    if ((isFillToGBC.Trim()).Equals("1"))
                     {
-                        GBCWebService.GBCWebService ws = new GBCWebService.GBCWebService();
-                        ws.FillVouNo(gbcVisaDetailAbateDetail.PK_會計年度, gbcVisaDetailAbateDetail.PK_動支編號, gbcVisaDetailAbateDetail.PK_種類, gbcVisaDetailAbateDetail.PK_次別, gbcVisaDetailAbateDetail.PK_明細號, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1);
+                        //判斷基金代號,回填至對應的預控系統(GBC)
+                        if (gbcVisaDetailAbateDetail.基金代碼 == "010")//醫發服務參考
+                        {
+                            GBCWebService.GBCWebService ws = new GBCWebService.GBCWebService();
+                            ws.FillVouNo(gbcVisaDetailAbateDetail.PK_會計年度, gbcVisaDetailAbateDetail.PK_動支編號, gbcVisaDetailAbateDetail.PK_種類, gbcVisaDetailAbateDetail.PK_次別, gbcVisaDetailAbateDetail.PK_明細號, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1);
+                        }
+                        else if (gbcVisaDetailAbateDetail.基金代碼 == "040")//菸害****尚未加入服務參考****
+                        {
+                            HPAGBCWebService.HPAGBCWebService ws = new HPAGBCWebService.HPAGBCWebService();
+                            ws.FillVouNo(gbcVisaDetailAbateDetail.PK_會計年度, gbcVisaDetailAbateDetail.PK_動支編號, gbcVisaDetailAbateDetail.PK_種類, gbcVisaDetailAbateDetail.PK_次別, gbcVisaDetailAbateDetail.PK_明細號, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1);
+                        }
+                        else if (gbcVisaDetailAbateDetail.基金代碼 == "090")//家防服務參考
+                        {
+                            DVGBCWebService.GBCWebService ws = new DVGBCWebService.GBCWebService();
+                            ws.FillVouNo(gbcVisaDetailAbateDetail.PK_會計年度, gbcVisaDetailAbateDetail.PK_動支編號, gbcVisaDetailAbateDetail.PK_種類, gbcVisaDetailAbateDetail.PK_次別, gbcVisaDetailAbateDetail.PK_明細號, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1);
+                        }
+                        else if (gbcVisaDetailAbateDetail.基金代碼 == "100")//長照
+                        {
+                            LCGBCWebService.GBCWebService ws = new LCGBCWebService.GBCWebService();
+                            ws.FillVouNo(gbcVisaDetailAbateDetail.PK_會計年度, gbcVisaDetailAbateDetail.PK_動支編號, gbcVisaDetailAbateDetail.PK_種類, gbcVisaDetailAbateDetail.PK_次別, gbcVisaDetailAbateDetail.PK_明細號, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1);
+                        }
+                        else if (gbcVisaDetailAbateDetail.基金代碼 == "110")//生產
+                        {
+                            BAGBCWebService.GBCWebService ws = new BAGBCWebService.GBCWebService();
+                            ws.FillVouNo(gbcVisaDetailAbateDetail.PK_會計年度, gbcVisaDetailAbateDetail.PK_動支編號, gbcVisaDetailAbateDetail.PK_種類, gbcVisaDetailAbateDetail.PK_次別, gbcVisaDetailAbateDetail.PK_明細號, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1);
+                        }
                     }
-                    else if (gbcVisaDetailAbateDetail.基金代碼 == "040")//菸害****尚未加入服務參考****
-                    {
-                        //HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
-                        //ws.FillVouNo(gbcVisaDetailAbateDetail.PK_會計年度, gbcVisaDetailAbateDetail.PK_動支編號, gbcVisaDetailAbateDetail.PK_種類, gbcVisaDetailAbateDetail.PK_次別, gbcVisaDetailAbateDetail.PK_明細號, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1);
-                    }
-                    else if (gbcVisaDetailAbateDetail.基金代碼 == "090")//家防服務參考
-                    {
-                        DVGBCWebService.GBCWebService ws = new DVGBCWebService.GBCWebService();
-                        ws.FillVouNo(gbcVisaDetailAbateDetail.PK_會計年度, gbcVisaDetailAbateDetail.PK_動支編號, gbcVisaDetailAbateDetail.PK_種類, gbcVisaDetailAbateDetail.PK_次別, gbcVisaDetailAbateDetail.PK_明細號, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1);
-                    }
-                    else if (gbcVisaDetailAbateDetail.基金代碼 == "100")//長照
-                    {
-                        LCGBCWebService.GBCWebService ws = new LCGBCWebService.GBCWebService();
-                        ws.FillVouNo(gbcVisaDetailAbateDetail.PK_會計年度, gbcVisaDetailAbateDetail.PK_動支編號, gbcVisaDetailAbateDetail.PK_種類, gbcVisaDetailAbateDetail.PK_次別, gbcVisaDetailAbateDetail.PK_明細號, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1);
-                    }
-                    else if (gbcVisaDetailAbateDetail.基金代碼 == "110")//生產
-                    {
-                        BAGBCWebService.GBCWebService ws = new BAGBCWebService.GBCWebService();
-                        ws.FillVouNo(gbcVisaDetailAbateDetail.PK_會計年度, gbcVisaDetailAbateDetail.PK_動支編號, gbcVisaDetailAbateDetail.PK_種類, gbcVisaDetailAbateDetail.PK_次別, gbcVisaDetailAbateDetail.PK_明細號, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1);
-                    }
+                    #endregion
                 }
-                #endregion
                 
             }
+
+            return "回填完畢";
+        }
+
+        [WebMethod]
+        //除菸金外的估列回填
+        public string FillVouNoForEstimate(string fundNo, string AccYear, string batch, string VouNo)
+        {
+            ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateServerCertificate);
+            GBCVisaDetailAbateDetailDAO dao = new GBCVisaDetailAbateDetailDAO();
+            GBCJSONRecordDAO jsonDAO = new GBCJSONRecordDAO();
+
+            dao.FillVouNoForEstimate(fundNo, AccYear, batch, VouNo);
+            jsonDAO.UpdatePassFlgForEstimate(fundNo, AccYear, batch);
 
             return "回填完畢";
         }
@@ -4093,9 +4144,27 @@ namespace AccWebService
         /// <param name="accKind"></param>
         /// <param name="batch"></param>
         /// <returns></returns>
-        public List<string> GetByKind(string fundNo, string accYear, string accKind, string batch)
+        public string GetByKind(string fundNo, string accYear, string accKind, string batch)
         {
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateServerCertificate);
+
+            Vw_GBCVisaDetail vw_GBCVisaDetail = new Vw_GBCVisaDetail();
+            List<Vw_GBCVisaDetail> vwList = new List<Vw_GBCVisaDetail>();
+            List<string> accDetailList = new List<string>();
+
+            最外層 vouTop = new 最外層(); //宣告輸出JSON格式
+
+            List<傳票明細> vouDtlList = new List<傳票明細>();
+            List<傳票受款人> vouPayList = new List<傳票受款人>();
+            List<傳票內容> vouCollectionList = new List<傳票內容>();
+
+            傳票主檔 vouMain = new 傳票主檔();
+            傳票內容 vouCollection = new 傳票內容();
+
+            GBCVisaDetailAbateDetailDAO dao = new GBCVisaDetailAbateDetailDAO();
+            GBCJSONRecordDAO jsonDAO = new GBCJSONRecordDAO();
+
+            int isLog = 0;
             switch (batch)
             {
                 case "6月":
@@ -4112,73 +4181,235 @@ namespace AccWebService
             if (fundNo == "010")//醫發服務參考
             {
                 GBCWebService.GBCWebService ws = new GBCWebService.GBCWebService();
-                List<string> accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch));
-                List<string> resultList = new List<string>();
-
-                foreach (var accDetailListItem in accDetailList)
-                {
-                    resultList.Add(GetVw_GBCVisaDetail(fundNo, accDetailListItem));
-                }
-
-                return resultList;
+                accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch));
             }
-            //else if (fundNo == "040")//菸害****尚未加入服務參考****
-            //{
-            //    HPAGBCWebService.GBCWebService ws = new HPAGBCWebService.GBCWebService();
-
-            //    List<string> accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch));
-            //    List<string> resultList = new List<string>();
-
-            //    foreach (var accDetailListItem in accDetailList)
-            //    {
-            //        resultList.Add(GetVw_GBCVisaDetail(fundNo, accDetailListItem));
-            //    }
-
-            //    return resultList;
-            //}
             else if (fundNo == "090")//家防服務參考
             {
                 DVGBCWebService.GBCWebService ws = new DVGBCWebService.GBCWebService();
-                List<string> accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch));
-                List<string> resultList = new List<string>();
-
-                foreach (var accDetailListItem in accDetailList)
-                {
-                    resultList.Add(GetVw_GBCVisaDetail(fundNo, accDetailListItem));
-                }
-
-                return resultList;
+                accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch));
             }
             else if (fundNo == "100")//長照****尚未加入服務參考****
             {
                 LCGBCWebService.GBCWebService ws = new LCGBCWebService.GBCWebService();
-                List<string> accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch));
-                List<string> resultList = new List<string>();
-
-                foreach (var accDetailListItem in accDetailList)
-                {
-                    resultList.Add(GetVw_GBCVisaDetail(fundNo, accDetailListItem));
-                }
-
-                return resultList;
+                accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch));
             }
             else if (fundNo == "110")//生產****尚未加入服務參考****
             {
                 BAGBCWebService.GBCWebService ws = new BAGBCWebService.GBCWebService();
-                List<string> accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch));
-                List<string> resultList = new List<string>();
-
-                foreach (var accDetailListItem in accDetailList)
-                {
-                    resultList.Add(GetVw_GBCVisaDetail(fundNo, accDetailListItem));
-                }
-
-                return resultList;
+                accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch));
             }
             else
             {
                 return null;
             }
+
+            //將取回的JSON集合反序列化
+            foreach (var accDetailListItem in accDetailList)
+            {
+                vwList.Add(JsonConvert.DeserializeObject<Vw_GBCVisaDetail>(accDetailListItem));
+            }
+
+            foreach (var vwListItem in vwList)
+            {
+                vw_GBCVisaDetail.基金代碼 = vwListItem.基金代碼;
+                vw_GBCVisaDetail.PK_會計年度 = vwListItem.PK_會計年度;
+                vw_GBCVisaDetail.PK_動支編號 = vwListItem.PK_動支編號;
+                vw_GBCVisaDetail.PK_種類 = vwListItem.PK_種類;
+                vw_GBCVisaDetail.PK_次別 = vwListItem.PK_次別;
+                vw_GBCVisaDetail.PK_明細號 = vwListItem.PK_明細號;
+                vw_GBCVisaDetail.F_科室代碼 = vwListItem.F_科室代碼;
+                vw_GBCVisaDetail.F_用途別代碼 = vwListItem.F_用途別代碼;
+                vw_GBCVisaDetail.F_計畫代碼 = vwListItem.F_計畫代碼;
+                vw_GBCVisaDetail.F_動支金額 = vwListItem.F_動支金額;
+                vw_GBCVisaDetail.F_製票日 = vwListItem.F_製票日;
+                vw_GBCVisaDetail.F_是否核定 = vwListItem.F_是否核定;
+                vw_GBCVisaDetail.F_核定金額 = vwListItem.F_核定金額;
+                vw_GBCVisaDetail.F_核定日期 = vwListItem.F_核定日期;
+                vw_GBCVisaDetail.F_摘要 = vwListItem.F_摘要;
+                vw_GBCVisaDetail.F_受款人 = vwListItem.F_受款人;
+                vw_GBCVisaDetail.F_受款人編號 = vwListItem.F_受款人編號;
+                vw_GBCVisaDetail.F_原動支編號 = vwListItem.F_原動支編號;
+                vw_GBCVisaDetail.F_批號 = vwListItem.F_批號;
+
+                //紀錄GBCVisa表
+                try
+                {
+                    isLog = dao.FindLog(x => x.基金代碼 == vw_GBCVisaDetail.基金代碼 && x.PK_會計年度 == vw_GBCVisaDetail.PK_會計年度 && x.PK_動支編號 == vw_GBCVisaDetail.PK_動支編號 && x.PK_種類 == vw_GBCVisaDetail.PK_種類 && x.PK_次別 == vw_GBCVisaDetail.PK_次別 && x.PK_明細號 == vw_GBCVisaDetail.PK_明細號);
+                    string isPass = jsonDAO.IsPass(x => x.基金代碼 == vw_GBCVisaDetail.基金代碼 && x.PFK_會計年度 == vw_GBCVisaDetail.PK_會計年度 && x.PFK_動支編號 == vw_GBCVisaDetail.PK_動支編號 && x.PFK_種類 == vw_GBCVisaDetail.PK_種類 && x.PFK_次別 == vw_GBCVisaDetail.PK_次別);
+
+                    if ((isLog > 0) && isPass.Equals("1"))
+                    {
+                        return "此筆資料已轉入過,並且結案。";
+                    }
+                    else if (((isLog > 0) && isPass.Equals("0")))
+                    {
+                        dao.Update(vw_GBCVisaDetail);
+                        jsonDAO.DeleteJsonRecord1(vw_GBCVisaDetail);
+                    }
+                    else
+                    {
+                        dao.Insert(vw_GBCVisaDetail);
+                    }
+                }
+                catch (Exception e)
+                {
+                    return e.Message;
+                }
+
+                //紀錄JsonRecord表
+                try
+                {
+                    jsonDAO.InsertJsonRecord1(vw_GBCVisaDetail, "");
+                }
+                catch (Exception e)
+                {
+                    return e.Message;
+                }
+
+            }
+
+            //Group估列應付資料借方(計畫-用途別)
+            var EstimateGroup_D = from s1 in vwList
+                                  group s1 by new { s1.基金代碼, s1.PK_會計年度, s1.PK_種類, s1.F_用途別代碼, s1.F_計畫代碼 } into g
+                                  select new { 基金代碼 = g.Key.基金代碼, PK_會計年度 = g.Key.PK_會計年度, PK_種類 = g.Key.PK_種類, F_用途別代碼 = g.Key.F_用途別代碼, F_計畫代碼 = g.Key.F_計畫代碼, F_核定金額 = g.Sum(xxx => xxx.F_核定金額), F_摘要 = g.Max(x => x.F_摘要) };
+
+            //Group估列應付資料貸方(計畫)
+            var EstimateGroup_C = from s1 in vwList
+                                  group s1 by new { s1.基金代碼, s1.PK_會計年度, s1.PK_種類, s1.F_計畫代碼 } into g
+                                  select new { 基金代碼 = g.Key.基金代碼, PK_會計年度 = g.Key.PK_會計年度, PK_種類 = g.Key.PK_種類, F_計畫代碼 = g.Key.F_計畫代碼, F_核定金額 = g.Sum(xxx => xxx.F_核定金額), F_摘要 = g.Max(x => x.F_摘要) };
+
+            foreach (var EstimateGroup_DItem in EstimateGroup_D)
+            {
+                vw_GBCVisaDetail.基金代碼 = EstimateGroup_DItem.基金代碼;
+                vw_GBCVisaDetail.PK_會計年度 = EstimateGroup_DItem.PK_會計年度;
+                //vw_GBCVisaDetail.PK_動支編號 = vwListItem.PK_動支編號;
+                vw_GBCVisaDetail.PK_種類 = EstimateGroup_DItem.PK_種類;
+                vw_GBCVisaDetail.PK_次別 = batch;
+                //vw_GBCVisaDetail.PK_明細號 = vwListItem.PK_明細號;
+                //vw_GBCVisaDetail.F_科室代碼 = vwListItem.F_科室代碼;
+                vw_GBCVisaDetail.F_用途別代碼 = EstimateGroup_DItem.F_用途別代碼;
+                vw_GBCVisaDetail.F_計畫代碼 = EstimateGroup_DItem.F_計畫代碼;
+                if (vw_GBCVisaDetail.F_計畫代碼.Length > 2)
+                {
+                    vw_GBCVisaDetail.F_計畫代碼 = vw_GBCVisaDetail.F_計畫代碼.Substring(7);
+                }
+                //vw_GBCVisaDetail.F_動支金額 = vwListItem.F_動支金額;
+                //vw_GBCVisaDetail.F_製票日 = vwListItem.F_製票日;
+                //vw_GBCVisaDetail.F_是否核定 = vwListItem.F_是否核定;
+                vw_GBCVisaDetail.F_核定金額 = EstimateGroup_DItem.F_核定金額;
+                //vw_GBCVisaDetail.F_核定日期 = vwListItem.F_核定日期;
+                vw_GBCVisaDetail.F_摘要 = EstimateGroup_DItem.F_摘要;
+                //vw_GBCVisaDetail.F_受款人 = vwListItem.F_受款人;
+                //vw_GBCVisaDetail.F_受款人編號 = vwListItem.F_受款人編號;
+                //vw_GBCVisaDetail.F_原動支編號 = vwListItem.F_原動支編號;
+                //vw_GBCVisaDetail.F_批號 = vwListItem.F_批號;
+
+                //try
+                //{
+                //    isLog = dao.FindLog(x => x.基金代碼 == vw_GBCVisaDetail.基金代碼 && x.PK_會計年度 == vw_GBCVisaDetail.PK_會計年度 && x.PK_動支編號 == vw_GBCVisaDetail.PK_動支編號 && x.PK_種類 == vw_GBCVisaDetail.PK_種類 && x.PK_次別 == vw_GBCVisaDetail.PK_次別 && x.PK_明細號 == vw_GBCVisaDetail.PK_明細號);
+                //    string isPass = jsonDAO.IsPass(x => x.基金代碼 == vw_GBCVisaDetail.基金代碼 && x.PFK_會計年度 == vw_GBCVisaDetail.PK_會計年度 && x.PFK_動支編號 == vw_GBCVisaDetail.PK_動支編號 && x.PFK_種類 == vw_GBCVisaDetail.PK_種類 && x.PFK_次別 == vw_GBCVisaDetail.PK_次別);
+
+                //    if ((isLog > 0) && isPass.Equals("1"))
+                //    {
+                //        return "此筆資料已轉入過,並且結案。";
+                //    }
+                //    else if (((isLog > 0) && isPass.Equals("0")))
+                //    {
+                //        dao.Update(vw_GBCVisaDetail);
+                //        jsonDAO.DeleteJsonRecord1(vw_GBCVisaDetail);
+                //    }
+                //    else
+                //    {
+                //        dao.Insert(vw_GBCVisaDetail);
+                //    }
+                //}
+                //catch (Exception e)
+                //{
+                //    return e.Message;
+                //}
+
+                傳票明細 vouDtl_D = new 傳票明細()
+                {
+                    借貸別 = "借",
+                    科目代號 = "5",
+                    科目名稱 = "基金用途",
+                    摘要 = vw_GBCVisaDetail.F_摘要,
+                    金額 = vw_GBCVisaDetail.F_核定金額,
+                    計畫代碼 = vw_GBCVisaDetail.F_計畫代碼,
+                    用途別代碼 = vw_GBCVisaDetail.F_用途別代碼,
+                    沖轉字號 = "",
+                    對象代碼 = vw_GBCVisaDetail.F_受款人編號,
+                    對象說明 = vw_GBCVisaDetail.F_受款人,
+
+                };
+                vouDtlList.Add(vouDtl_D);
+            }
+
+            foreach (var EstimateGroup_CItem in EstimateGroup_C)
+            {
+                傳票明細 vouDtl_C = new 傳票明細()
+                {
+                    借貸別 = "貸",
+                    科目代號 = "2125",
+                    科目名稱 = "應付費用",
+                    摘要 = EstimateGroup_CItem.F_摘要,
+                    金額 = EstimateGroup_CItem.F_核定金額,
+                    計畫代碼 = EstimateGroup_CItem.F_計畫代碼,
+                    用途別代碼 = "",
+                    沖轉字號 = "",
+                    對象代碼 = "",
+                    對象說明 = "",
+                    明細號 = ""
+                };
+
+                if (vouDtl_C.計畫代碼.Length > 2)
+                {
+                    vouDtl_C.計畫代碼 = vouDtl_C.計畫代碼.Substring(7);
+                }
+
+                vouDtlList.Add(vouDtl_C);
+            }
+
+            傳票受款人 vouPay = new 傳票受款人()
+            {
+                統一編號 = "",
+                受款人名稱 = "",
+                地址 = "",
+                實付金額 = 0,
+                銀行代號 = "",
+                銀行名稱 = "",
+                銀行帳號 = "",
+                帳戶名稱 = ""
+            };
+            vouPayList.Add(vouPay);
+
+            vouMain.傳票種類 = "4";
+            vouMain.製票日期 = "";
+            if (batch == "1")
+            {
+                vouMain.主摘要 = "估列" + accYear + "年" + "上半年應付費用";
+            }
+            else
+            {
+                vouMain.主摘要 = "估列" + accYear + "年" + "下半年應付費用";
+            }
+            vouMain.交付方式 = "1";
+            vouCollection.傳票主檔 = vouMain;
+            vouCollection.傳票明細 = vouDtlList;
+            vouCollection.傳票受款人 = vouPayList;
+
+            vouCollectionList.Add(vouCollection);
+
+            vouTop.基金代碼 = vw_GBCVisaDetail.基金代碼;
+            vouTop.年度 = vw_GBCVisaDetail.PK_會計年度;
+            vouTop.動支編號 = vw_GBCVisaDetail.PK_動支編號;
+            vouTop.種類 = vw_GBCVisaDetail.PK_種類;
+            vouTop.次別 = vw_GBCVisaDetail.PK_次別;
+            vouTop.明細號 = vw_GBCVisaDetail.PK_明細號;
+            vouTop.傳票內容 = vouCollectionList;
+
+            return JsonConvert.SerializeObject(vouTop);
+
         }
 
         [WebMethod]

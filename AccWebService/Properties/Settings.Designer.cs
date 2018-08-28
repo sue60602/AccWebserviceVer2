@@ -26,16 +26,6 @@ namespace AccWebService.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.WebServiceUrl)]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://59.125.117.100/GBCWebService/GBCWebService.asmx")]
-        public string AccWebService_GBCWebService_GBCWebService {
-            get {
-                return ((string)(this["AccWebService_GBCWebService_GBCWebService"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.WebServiceUrl)]
         [global::System.Configuration.DefaultSettingValueAttribute("http://59.125.117.100/BAGBCWebService/GBCWebService.asmx")]
         public string AccWebService_BAGBCWebService_GBCWebService {
             get {
@@ -60,6 +50,16 @@ namespace AccWebService.Properties {
         public string AccWebService_LCGBCWebService_GBCWebService {
             get {
                 return ((string)(this["AccWebService_LCGBCWebService_GBCWebService"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.WebServiceUrl)]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://59.125.117.100/GBCWebService/GBCWebService.asmx")]
+        public string AccWebService_GBCWebService_GBCWebService {
+            get {
+                return ((string)(this["AccWebService_GBCWebService_GBCWebService"]));
             }
         }
         

@@ -23,7 +23,7 @@ namespace AccWebService.GBCWebService {
     
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2556.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Web.Services.WebServiceBindingAttribute(Name="GBCWebServiceSoap", Namespace="http://tempuri.org/")]
@@ -32,6 +32,8 @@ namespace AccWebService.GBCWebService {
         private System.Threading.SendOrPostCallback GetVw_GBCVisaDetailJSONOperationCompleted;
         
         private System.Threading.SendOrPostCallback FillVouNoOperationCompleted;
+        
+        private System.Threading.SendOrPostCallback FillVouNoEstimateOperationCompleted;
         
         private System.Threading.SendOrPostCallback GetYearOperationCompleted;
         
@@ -90,6 +92,9 @@ namespace AccWebService.GBCWebService {
         
         /// <remarks/>
         public event FillVouNoCompletedEventHandler FillVouNoCompleted;
+        
+        /// <remarks/>
+        public event FillVouNoEstimateCompletedEventHandler FillVouNoEstimateCompleted;
         
         /// <remarks/>
         public event GetYearCompletedEventHandler GetYearCompleted;
@@ -183,6 +188,41 @@ namespace AccWebService.GBCWebService {
             if ((this.FillVouNoCompleted != null)) {
                 System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
                 this.FillVouNoCompleted(this, new FillVouNoCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/FillVouNoEstimate", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public string FillVouNoEstimate(string accYear, string TsbEstimateType, string VouNo, string VouDate) {
+            object[] results = this.Invoke("FillVouNoEstimate", new object[] {
+                        accYear,
+                        TsbEstimateType,
+                        VouNo,
+                        VouDate});
+            return ((string)(results[0]));
+        }
+        
+        /// <remarks/>
+        public void FillVouNoEstimateAsync(string accYear, string TsbEstimateType, string VouNo, string VouDate) {
+            this.FillVouNoEstimateAsync(accYear, TsbEstimateType, VouNo, VouDate, null);
+        }
+        
+        /// <remarks/>
+        public void FillVouNoEstimateAsync(string accYear, string TsbEstimateType, string VouNo, string VouDate, object userState) {
+            if ((this.FillVouNoEstimateOperationCompleted == null)) {
+                this.FillVouNoEstimateOperationCompleted = new System.Threading.SendOrPostCallback(this.OnFillVouNoEstimateOperationCompleted);
+            }
+            this.InvokeAsync("FillVouNoEstimate", new object[] {
+                        accYear,
+                        TsbEstimateType,
+                        VouNo,
+                        VouDate}, this.FillVouNoEstimateOperationCompleted, userState);
+        }
+        
+        private void OnFillVouNoEstimateOperationCompleted(object arg) {
+            if ((this.FillVouNoEstimateCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.FillVouNoEstimateCompleted(this, new FillVouNoEstimateCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
             }
         }
         
@@ -429,11 +469,11 @@ namespace AccWebService.GBCWebService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2556.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
     public delegate void GetVw_GBCVisaDetailJSONCompletedEventHandler(object sender, GetVw_GBCVisaDetailJSONCompletedEventArgs e);
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2556.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     public partial class GetVw_GBCVisaDetailJSONCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
@@ -455,11 +495,11 @@ namespace AccWebService.GBCWebService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2556.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
     public delegate void FillVouNoCompletedEventHandler(object sender, FillVouNoCompletedEventArgs e);
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2556.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     public partial class FillVouNoCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
@@ -481,11 +521,37 @@ namespace AccWebService.GBCWebService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2556.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
+    public delegate void FillVouNoEstimateCompletedEventHandler(object sender, FillVouNoEstimateCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class FillVouNoEstimateCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
+        
+        private object[] results;
+        
+        internal FillVouNoEstimateCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
+                base(exception, cancelled, userState) {
+            this.results = results;
+        }
+        
+        /// <remarks/>
+        public string Result {
+            get {
+                this.RaiseExceptionIfNecessary();
+                return ((string)(this.results[0]));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
     public delegate void GetYearCompletedEventHandler(object sender, GetYearCompletedEventArgs e);
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2556.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     public partial class GetYearCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
@@ -507,11 +573,11 @@ namespace AccWebService.GBCWebService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2556.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
     public delegate void GetAcmWordNumCompletedEventHandler(object sender, GetAcmWordNumCompletedEventArgs e);
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2556.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     public partial class GetAcmWordNumCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
@@ -533,11 +599,11 @@ namespace AccWebService.GBCWebService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2556.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
     public delegate void GetAccKindCompletedEventHandler(object sender, GetAccKindCompletedEventArgs e);
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2556.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     public partial class GetAccKindCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
@@ -559,11 +625,11 @@ namespace AccWebService.GBCWebService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2556.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
     public delegate void GetAccCountCompletedEventHandler(object sender, GetAccCountCompletedEventArgs e);
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2556.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     public partial class GetAccCountCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
@@ -585,11 +651,11 @@ namespace AccWebService.GBCWebService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2556.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
     public delegate void GetAccDetailCompletedEventHandler(object sender, GetAccDetailCompletedEventArgs e);
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2556.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     public partial class GetAccDetailCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
@@ -611,11 +677,11 @@ namespace AccWebService.GBCWebService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2556.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
     public delegate void GetByPrimaryKeyCompletedEventHandler(object sender, GetByPrimaryKeyCompletedEventArgs e);
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2556.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     public partial class GetByPrimaryKeyCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
@@ -637,11 +703,11 @@ namespace AccWebService.GBCWebService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2556.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
     public delegate void GetByKindCompletedEventHandler(object sender, GetByKindCompletedEventArgs e);
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2556.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     public partial class GetByKindCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {

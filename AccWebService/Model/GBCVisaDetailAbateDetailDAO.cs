@@ -121,5 +121,25 @@ namespace AccWebService.Model
             db.GBCVisaDetailAbateDetail.Add(getOne);
             db.SaveChanges();
         }
+
+        public void FillVouNoForEstimate(string fundNo, string AccYear, string batch, string VouNo)
+        {
+            
+            var getGBCVisaDetailAbateDetail = from s1 in db.GBCVisaDetailAbateDetail
+                                              .Where(x => x.基金代碼 == fundNo && x.PK_會計年度 == AccYear && x.PK_種類=="估列" && x.PK_次別 == batch).ToList()
+                                              select s1;
+
+            foreach (var getGBCVisaDetailAbateDetailItem in getGBCVisaDetailAbateDetail)
+            {
+                db.GBCVisaDetailAbateDetail.Remove(getGBCVisaDetailAbateDetailItem);
+                db.SaveChanges();
+
+                getGBCVisaDetailAbateDetailItem.F_傳票年度 = AccYear;
+                getGBCVisaDetailAbateDetailItem.F_傳票號1 = VouNo;
+                db.GBCVisaDetailAbateDetail.Add(getGBCVisaDetailAbateDetailItem);
+
+                db.SaveChanges();
+            }
+        }
     }
 }
