@@ -119,23 +119,25 @@ namespace AccWebService.DVGBCWebService {
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/GetVw_GBCVisaDetailJSON", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public string GetVw_GBCVisaDetailJSON(string acmWordNum) {
+        public string GetVw_GBCVisaDetailJSON(string AccYear, string acmWordNum) {
             object[] results = this.Invoke("GetVw_GBCVisaDetailJSON", new object[] {
+                        AccYear,
                         acmWordNum});
             return ((string)(results[0]));
         }
         
         /// <remarks/>
-        public void GetVw_GBCVisaDetailJSONAsync(string acmWordNum) {
-            this.GetVw_GBCVisaDetailJSONAsync(acmWordNum, null);
+        public void GetVw_GBCVisaDetailJSONAsync(string AccYear, string acmWordNum) {
+            this.GetVw_GBCVisaDetailJSONAsync(AccYear, acmWordNum, null);
         }
         
         /// <remarks/>
-        public void GetVw_GBCVisaDetailJSONAsync(string acmWordNum, object userState) {
+        public void GetVw_GBCVisaDetailJSONAsync(string AccYear, string acmWordNum, object userState) {
             if ((this.GetVw_GBCVisaDetailJSONOperationCompleted == null)) {
                 this.GetVw_GBCVisaDetailJSONOperationCompleted = new System.Threading.SendOrPostCallback(this.OnGetVw_GBCVisaDetailJSONOperationCompleted);
             }
             this.InvokeAsync("GetVw_GBCVisaDetailJSON", new object[] {
+                        AccYear,
                         acmWordNum}, this.GetVw_GBCVisaDetailJSONOperationCompleted, userState);
         }
         

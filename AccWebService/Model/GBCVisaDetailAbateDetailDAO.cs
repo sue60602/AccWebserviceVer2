@@ -39,7 +39,47 @@ namespace AccWebService.Model
             
         }
 
+        public void Update(Vw_GBCVisaDetailForHPA vw_GBCVisaDetail)
+        {
+            var result = (from s1 in db.GBCVisaDetailAbateDetail select s1)
+                .Where(x => x.基金代碼 == vw_GBCVisaDetail.基金代碼 && x.PK_會計年度 == vw_GBCVisaDetail.PK_會計年度 && x.PK_動支編號 == vw_GBCVisaDetail.PK_動支編號 && x.PK_種類 == vw_GBCVisaDetail.PK_種類 && x.PK_次別 == vw_GBCVisaDetail.PK_次別 && x.PK_明細號 == vw_GBCVisaDetail.PK_明細號)
+                .First();
+
+            result.基金代碼 = vw_GBCVisaDetail.基金代碼;
+            result.PK_會計年度 = vw_GBCVisaDetail.PK_會計年度;
+            result.PK_動支編號 = vw_GBCVisaDetail.PK_動支編號;
+            result.PK_種類 = vw_GBCVisaDetail.PK_種類;
+            result.PK_次別 = vw_GBCVisaDetail.PK_次別;
+            result.PK_明細號 = vw_GBCVisaDetail.PK_明細號;
+            result.F_核定金額 = Convert.ToDecimal(vw_GBCVisaDetail.F_核定金額);
+            result.F_受款人編號 = vw_GBCVisaDetail.F_受款人編號;
+            result.F_受款人 = vw_GBCVisaDetail.F_受款人;
+            result.F_原動支編號 = vw_GBCVisaDetail.F_原動支編號;
+
+            db.SaveChanges();
+
+        }
+
         public void Insert(Vw_GBCVisaDetail vw_GBCVisaDetail)
+        {
+            GBCVisaDetailAbateDetail gbcVisaDetailAbateDetail = new GBCVisaDetailAbateDetail();
+            gbcVisaDetailAbateDetail.基金代碼 = vw_GBCVisaDetail.基金代碼;
+            gbcVisaDetailAbateDetail.PK_會計年度 = vw_GBCVisaDetail.PK_會計年度;
+            gbcVisaDetailAbateDetail.PK_動支編號 = vw_GBCVisaDetail.PK_動支編號;
+            gbcVisaDetailAbateDetail.PK_種類 = vw_GBCVisaDetail.PK_種類;
+            gbcVisaDetailAbateDetail.PK_次別 = vw_GBCVisaDetail.PK_次別;
+            gbcVisaDetailAbateDetail.PK_明細號 = vw_GBCVisaDetail.PK_明細號;
+            gbcVisaDetailAbateDetail.F_核定金額 = Convert.ToDecimal(vw_GBCVisaDetail.F_核定金額);
+            gbcVisaDetailAbateDetail.F_受款人編號 = vw_GBCVisaDetail.F_受款人編號;
+            gbcVisaDetailAbateDetail.F_受款人 = vw_GBCVisaDetail.F_受款人;
+            gbcVisaDetailAbateDetail.F_傳票年度 = "";
+            gbcVisaDetailAbateDetail.F_原動支編號 = vw_GBCVisaDetail.F_原動支編號;
+
+            db.GBCVisaDetailAbateDetail.Add(gbcVisaDetailAbateDetail);
+            db.SaveChanges();
+        }
+
+        public void Insert(Vw_GBCVisaDetailForHPA vw_GBCVisaDetail)
         {
             GBCVisaDetailAbateDetail gbcVisaDetailAbateDetail = new GBCVisaDetailAbateDetail();
             gbcVisaDetailAbateDetail.基金代碼 = vw_GBCVisaDetail.基金代碼;

@@ -37,7 +37,7 @@ namespace AccWebService
         /// <param name="fundNo"></param>
         /// <param name="acmWordNum"></param>
         /// <returns></returns>
-        public string GetVw_GBCVisaDetail(string fundNo, string acmWordNum)
+        public string GetVw_GBCVisaDetail(string fundNo, string acmWordNum, string AccYear)
         {
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateServerCertificate);
             GBCVisaDetailAbateDetailDAO dao = new GBCVisaDetailAbateDetailDAO();
@@ -73,32 +73,56 @@ namespace AccWebService
             if (fundNo == "010")//醫發服務參考
             {
                 GBCWebService.GBCWebService ws = new GBCWebService.GBCWebService();
-                JSONReturn = ws.GetVw_GBCVisaDetailJSON(acmWordNum); //呼叫預控的服務,取得此動支編號的view資料
+                JSONReturn = ws.GetVw_GBCVisaDetailJSON(AccYear, acmWordNum); //呼叫預控的服務,取得此動支編號的view資料
             }
             else if (fundNo == "040")//菸害服務參考
             {
                 HPAGBCWebService.HPAGBCWebService ws = new HPAGBCWebService.HPAGBCWebService();
-                string AccYear = (DateTime.Now.Year - 1911).ToString();
+                //string AccYear = (DateTime.Now.Year - 1911).ToString();
                 //JSONReturn = ws.GetSP_GBCVisaDetailJSON(AccYear,acmWordNum);
             }
             else if (fundNo == "090")//家防服務參考
             {
                 DVGBCWebService.GBCWebService ws = new DVGBCWebService.GBCWebService();
-                JSONReturn = ws.GetVw_GBCVisaDetailJSON(acmWordNum); //呼叫預控的服務,取得此動支編號的view資料
+                JSONReturn = ws.GetVw_GBCVisaDetailJSON(AccYear, acmWordNum); //呼叫預控的服務,取得此動支編號的view資料
             }
             else if (fundNo == "100")//長照
             {
                 LCGBCWebService.GBCWebService ws = new LCGBCWebService.GBCWebService();
-                JSONReturn = ws.GetVw_GBCVisaDetailJSON(acmWordNum); //呼叫預控的服務,取得此動支編號的view資料
+                JSONReturn = ws.GetVw_GBCVisaDetailJSON(AccYear, acmWordNum); //呼叫預控的服務,取得此動支編號的view資料
             }
             else if (fundNo == "110")//生產
             {
                 BAGBCWebService.GBCWebService ws = new BAGBCWebService.GBCWebService();
-                JSONReturn = ws.GetVw_GBCVisaDetailJSON(acmWordNum); //呼叫預控的服務,取得此動支編號的view資料
+                JSONReturn = ws.GetVw_GBCVisaDetailJSON(AccYear, acmWordNum); //呼叫預控的服務,取得此動支編號的view資料
             }
             else
             {
                 return "基金代號有誤! 號碼為: " + fundNo;
+            }
+
+            //如果沒找到資料,改找JOSN2有沒有資料
+            string[] strs = acmWordNum.Split('-');
+            if (JSONReturn.Contains("查無") && strs[1] == "2" && fundNo != "040")
+            {
+                string JSON2AcmWordNum = strs[0];
+                string JSON2AccNo = strs[2];
+                string JSON2 = jsonDAO.FindJSON2(x => x.基金代碼 == fundNo && x.PFK_會計年度 == AccYear && x.PFK_動支編號 == JSON2AcmWordNum && x.PFK_種類 == "核銷" && x.PFK_次別 == JSON2AccNo);
+                //如果還是沒有找到,再看看是不是在原動支編號
+                //if (JSON2 == "")
+                //{
+                //    string NewAcmWordNum = (from s1 in  dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == fundNo && x.PK_會計年度 == AccYear && x.F_原動支編號 == JSON2AcmWordNum && x.PK_種類 == "核銷" && x.PK_次別 == JSON2AccNo) select s1.PK_動支編號).FirstOrDefault();
+                //    JSON2 = jsonDAO.FindJSON2(x => x.基金代碼 == fundNo && x.PFK_會計年度 == AccYear && x.PFK_動支編號 == NewAcmWordNum && x.PFK_種類 == "核銷" && x.PFK_次別 == JSON2AccNo);
+                //}
+                if (JSON2 == "")
+                {
+                    //查無資料
+                    return JSONReturn;
+                }
+                else
+                {
+                    return JSON2;
+                }
             }
 
             try
@@ -2118,7 +2142,7 @@ namespace AccWebService
 
         #region 菸金用WebService
         [WebMethod]
-        ///菸金用傳票就源
+        //菸金用傳票就源
         public string GetSP_HPAGBCVisaDetail(string fundNo,string accYear, string acmWordNum, string AccType)
         {
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateServerCertificate);
@@ -3598,6 +3622,77 @@ namespace AccWebService
         }
 
         [WebMethod]
+        //菸金用傳票就源(在傳票明細沖轉字號選取)
+        public string GetSP_HPAGBCVisaDetailForVoucher(string fundNo, string accYear, string acmWordNum)
+        {
+            ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateServerCertificate);
+            List<Vw_GBCVisaDetailForHPA> vwList = new List<Vw_GBCVisaDetailForHPA>();
+            Vw_GBCVisaDetailForHPA sp_GBCVisaDetail = new Vw_GBCVisaDetailForHPA();
+            GBCVisaDetailAbateDetailDAO dao = new GBCVisaDetailAbateDetailDAO();
+
+            int isPrePay = 0; 
+            int isLog = 0; //有無預付
+
+            HPAGBCWebService.HPAGBCWebService ws = new HPAGBCWebService.HPAGBCWebService();
+            string JSONReturn = ws.GetSP_GBCVisaDetailJSONForVoucher(accYear, acmWordNum);
+
+            try
+            {
+                vwList = JsonConvert.DeserializeObject<List<Vw_GBCVisaDetailForHPA>>(JSONReturn);  //反序列化JSON               
+            }
+            catch (Exception e)
+            {
+                return JSONReturn;
+            }
+
+            foreach (var vwListItem in vwList)
+            {
+                sp_GBCVisaDetail.基金代碼 = vwListItem.基金代碼;
+                sp_GBCVisaDetail.PK_會計年度 = vwListItem.PK_會計年度;
+                //sp_GBCVisaDetail.PK_動支編號 = vwListItem.PK_動支編號;
+                //sp_GBCVisaDetail.PK_動支編號 = acmWordNum;
+                sp_GBCVisaDetail.PK_動支編號 = vwListItem.BarCode;
+                sp_GBCVisaDetail.PK_種類 = vwListItem.PK_種類;
+                sp_GBCVisaDetail.PK_次別 = vwListItem.PK_次別;
+                sp_GBCVisaDetail.PK_明細號 = vwListItem.PK_明細號;
+                sp_GBCVisaDetail.F_科室代碼 = vwListItem.F_科室代碼;
+                sp_GBCVisaDetail.F_用途別代碼 = vwListItem.F_用途別代碼;
+                sp_GBCVisaDetail.F_計畫代碼 = vwListItem.F_計畫代碼;
+                sp_GBCVisaDetail.F_動支金額 = vwListItem.F_動支金額;
+                sp_GBCVisaDetail.F_製票日 = vwListItem.F_製票日;
+                sp_GBCVisaDetail.F_是否核定 = vwListItem.F_是否核定;
+                sp_GBCVisaDetail.F_核定金額 = vwListItem.F_核定金額;
+                sp_GBCVisaDetail.F_核定日期 = vwListItem.F_核定日期;
+                sp_GBCVisaDetail.F_摘要 = vwListItem.F_摘要;
+                sp_GBCVisaDetail.F_受款人 = vwListItem.F_受款人;
+                sp_GBCVisaDetail.F_受款人編號 = vwListItem.F_受款人編號;
+                sp_GBCVisaDetail.F_原動支編號 = vwListItem.F_原動支編號;
+                sp_GBCVisaDetail.F_批號 = vwListItem.F_批號;
+
+                try
+                {
+                    isLog = dao.FindLog(x => x.基金代碼 == sp_GBCVisaDetail.基金代碼 && x.PK_會計年度 == sp_GBCVisaDetail.PK_會計年度 && x.PK_動支編號 == sp_GBCVisaDetail.PK_動支編號 && x.PK_種類 == sp_GBCVisaDetail.PK_種類 && x.PK_次別 == sp_GBCVisaDetail.PK_次別 && x.PK_明細號 == sp_GBCVisaDetail.PK_明細號);
+
+                     if (isLog > 0)
+                    {
+                        dao.Update(sp_GBCVisaDetail);
+                    }
+                    else
+                    {
+                        dao.Insert(sp_GBCVisaDetail);
+                    }
+                }
+                catch (Exception e)
+                {
+                    return e.Message;
+                }
+
+            }
+
+            return JSONReturn;
+        }
+
+        [WebMethod]
         //菸金用出納介接
         public string GetDataExchangeVouMain(string AccYear, string State, string Memo, DateTime StartDate, DateTime EndDate)
         {
@@ -3699,16 +3794,45 @@ namespace AccWebService
                 acmKind = strs[3];
             }
 
-            if (int.Parse(acmWordNumOut.Substring(0, 3)) < DateTime.Now.Year - 1911)
-            {
-                int isOrigNum = dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == fundNo && x.PK_會計年度 == fillVouScript.傳票年度 && x.F_原動支編號 == acmWordNumOut).Count();
-                if (isOrigNum > 0)
-                {
-                    acmWordNumOut = (dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == fundNo && x.F_原動支編號 == acmWordNumOut && x.PK_種類 == acmKind && x.PK_次別 == acmNo))
-                                .FirstOrDefault().PK_動支編號;
-                }
-                
-            }
+            //判斷是否有原動支編號
+            //1071018 不判斷了
+            //if (int.Parse(acmWordNumOut.Substring(0, 3)) < DateTime.Now.Year - 1911)
+            //{
+            //    //是否有原動支編號(不管開過傳票與否)
+            //    int isOrigNum = dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == fundNo && x.PK_會計年度 == fillVouScript.傳票年度 && x.F_原動支編號 == acmWordNumOut && x.PK_次別 == acmNo ).Count();
+
+            //    //是否為以前年度保留(不管開過傳票與否)
+            //    int isThisYear = dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == fundNo && x.PK_會計年度 == fillVouScript.傳票年度 && x.PK_動支編號 == acmWordNumOut && x.PK_次別 == acmNo ).Count();
+
+            //    if (isThisYear > 0 && isOrigNum > 0)
+            //    {
+            //        //同時存在兩個年度時,在判斷兩年度有無開過傳票若以前年度還沒開過傳票,優先填以前年度
+
+            //        //是否為以前年度保留且未開傳票
+            //        isThisYear = dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == fundNo && x.PK_會計年度 == fillVouScript.傳票年度 && x.PK_動支編號 == acmWordNumOut && x.PK_次別 == acmNo && x.F_傳票號1 == null && x.F_傳票號2 == null).Count();
+            //        //是否有原動支編號且未開傳票
+            //        isOrigNum = dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == fundNo && x.PK_會計年度 == fillVouScript.傳票年度 && x.F_原動支編號 == acmWordNumOut && x.PK_次別 == acmNo && x.F_傳票號1 == null && x.F_傳票號2 == null).Count();
+
+            //        if (isThisYear == 0)
+            //        {
+            //            //改成新年度動支編號
+            //            acmWordNumOut = (dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == fundNo && x.F_原動支編號 == acmWordNumOut && x.PK_種類 == acmKind && x.PK_次別 == acmNo))
+            //                        .FirstOrDefault().PK_動支編號;
+            //        }
+
+            //    }
+            //    else if (isThisYear > 0)
+            //    {
+            //        //優先填以前年度
+            //        //所以acmWordNumOut 不變
+            //    }
+            //    else if (isOrigNum > 0)
+            //    {
+            //        //改成新年度動支編號
+            //        acmWordNumOut = (dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == fundNo && x.F_原動支編號 == acmWordNumOut && x.PK_種類 == acmKind && x.PK_次別 == acmNo))
+            //                    .FirstOrDefault().PK_動支編號;
+            //    }
+            //}
 
             //isPass = jsonDAO.IsPass(fundNo, acmWordNumOut.Substring(0, 3), acmWordNumOut, acmKind, acmNo);
             //isJSON2 = jsonDAO.FindJSON2(fundNo, acmWordNumOut.Substring(0, 3), acmWordNumOut, acmKind, acmNo);
@@ -3799,6 +3923,77 @@ namespace AccWebService
             return "回填完畢";
         }
 
+        [WebMethod]
+        //菸金用回填傳票號
+        public string FillVouNoForHPA(string fundNo, string acmWordNum, string vouNoJSON)
+        {
+            ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateServerCertificate);
+            GBCVisaDetailAbateDetailDAO dao = new GBCVisaDetailAbateDetailDAO();
+            GBCJSONRecordDAO jsonDAO = new GBCJSONRecordDAO();
+            FillVouScriptForHPA fillVouScriptForHPA = new FillVouScriptForHPA();
+            GBCVisaDetailAbateDetail gbcVisaDetailAbateDetail = new GBCVisaDetailAbateDetail();
+
+            string isVouNo1 = "";
+            string isVouNo2 = "";
+            string isJSON2 = "";
+            string isPass = "";
+            int count = 0;
+
+            vouNoJSON = vouNoJSON.Replace(@"\r\n", ""); //清除\r\n              
+            vouNoJSON = vouNoJSON.Replace(@"\", "");    //清除\        
+            vouNoJSON = vouNoJSON.Replace(@"""[", "["); //將 "[  改為 [
+            vouNoJSON = vouNoJSON.Replace(@"]""", "]"); //將 ]"  改為 ]
+
+            //-------寫入Log------------------
+            jsonDAO.InsertJsonLog(fundNo, acmWordNum, vouNoJSON);
+            //--------------------------------
+
+            try
+            {
+                fillVouScriptForHPA = JsonConvert.DeserializeObject<FillVouScriptForHPA>(vouNoJSON);  //反序列化JSON
+            }
+            catch (Exception e)
+            {
+                return e.StackTrace;
+            }
+
+            //菸金條碼規則= 條碼-種類-次別-明細
+            //例如: 10701481-0-6-轉正-1(沖銷對應用)-3(沖銷對應用)
+            string[] strs = acmWordNum.Split('-'); //以"-"區分種類及次號
+            string acmWordNumOut = strs[0]; //動支編號(8碼)
+            string Barcode = strs[0] + "-" + strs[1] + "-" + strs[2];
+            string acmKind = strs[3]; //種類
+            string acmNo = strs[2]; //次別 
+            string acmNo1 = strs[4]; //次別 
+            string acmDetail = strs[5]; //種類
+
+            isVouNo1 = dao.IsVouNo1(fundNo, fillVouScriptForHPA.傳票年度, Barcode, acmKind, acmNo1, acmDetail);
+            //isPass = jsonDAO.IsPass(x => x.基金代碼 == fundNo && x.PFK_會計年度 == fillVouScriptForHPA.傳票年度 && x.PFK_動支編號 == Barcode && x.PFK_種類 == acmKind && x.PFK_次別 == acmNo);
+
+            gbcVisaDetailAbateDetail.基金代碼 = fundNo;
+            gbcVisaDetailAbateDetail.PK_會計年度 = fillVouScriptForHPA.傳票年度;
+            gbcVisaDetailAbateDetail.PK_動支編號 = Barcode;
+            gbcVisaDetailAbateDetail.PK_種類 = acmKind;
+            gbcVisaDetailAbateDetail.PK_次別 = acmNo1;
+            gbcVisaDetailAbateDetail.F_傳票年度 = fillVouScriptForHPA.傳票年度;
+            gbcVisaDetailAbateDetail.F_傳票號1 = fillVouScriptForHPA.傳票號;
+            gbcVisaDetailAbateDetail.F_製票日期1 = fillVouScriptForHPA.製票日期;
+            gbcVisaDetailAbateDetail.PK_明細號 = acmDetail;
+            gbcVisaDetailAbateDetail.F_傳票明細號1 = int.Parse(fillVouScriptForHPA.傳票明細號);
+
+            dao.UpdateVouNo1(gbcVisaDetailAbateDetail);
+
+            //if ((isVouNo1 == null) && (isPass == "0")) //傳票1未回填 AND 未結案 --回填至傳票1
+            //{
+            //    dao.UpdateVouNo1(gbcVisaDetailAbateDetail);
+            //    jsonDAO.UpdatePassFlg(fundNo, fillVouScriptForHPA.傳票年度, Barcode, acmKind, acmNo1);
+            //}
+
+            HPAGBCWebService.HPAGBCWebService ws = new HPAGBCWebService.HPAGBCWebService();
+            ws.FillVouNo(gbcVisaDetailAbateDetail.PK_會計年度, acmWordNumOut, gbcVisaDetailAbateDetail.PK_種類, acmNo, gbcVisaDetailAbateDetail.PK_明細號, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1);
+
+            return "回填完畢";
+        }
         [WebMethod]
         //除菸金外的估列回填
         public string FillVouNoForEstimate(string fundNo, string AccYear, string batch, string VouNo)

@@ -33,6 +33,8 @@ namespace AccWebService.HPAGBCWebService {
         
         private System.Threading.SendOrPostCallback GetSP_GBCVisaDetailJSONOperationCompleted;
         
+        private System.Threading.SendOrPostCallback GetSP_GBCVisaDetailJSONForVoucherOperationCompleted;
+        
         private System.Threading.SendOrPostCallback FillVouNoOperationCompleted;
         
         private System.Threading.SendOrPostCallback GetDataExchangeVouMainOperationCompleted;
@@ -82,6 +84,9 @@ namespace AccWebService.HPAGBCWebService {
         
         /// <remarks/>
         public event GetSP_GBCVisaDetailJSONCompletedEventHandler GetSP_GBCVisaDetailJSONCompleted;
+        
+        /// <remarks/>
+        public event GetSP_GBCVisaDetailJSONForVoucherCompletedEventHandler GetSP_GBCVisaDetailJSONForVoucherCompleted;
         
         /// <remarks/>
         public event FillVouNoCompletedEventHandler FillVouNoCompleted;
@@ -153,6 +158,37 @@ namespace AccWebService.HPAGBCWebService {
             if ((this.GetSP_GBCVisaDetailJSONCompleted != null)) {
                 System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
                 this.GetSP_GBCVisaDetailJSONCompleted(this, new GetSP_GBCVisaDetailJSONCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/GetSP_GBCVisaDetailJSONForVoucher", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public string GetSP_GBCVisaDetailJSONForVoucher(string AccYear, string BarCode) {
+            object[] results = this.Invoke("GetSP_GBCVisaDetailJSONForVoucher", new object[] {
+                        AccYear,
+                        BarCode});
+            return ((string)(results[0]));
+        }
+        
+        /// <remarks/>
+        public void GetSP_GBCVisaDetailJSONForVoucherAsync(string AccYear, string BarCode) {
+            this.GetSP_GBCVisaDetailJSONForVoucherAsync(AccYear, BarCode, null);
+        }
+        
+        /// <remarks/>
+        public void GetSP_GBCVisaDetailJSONForVoucherAsync(string AccYear, string BarCode, object userState) {
+            if ((this.GetSP_GBCVisaDetailJSONForVoucherOperationCompleted == null)) {
+                this.GetSP_GBCVisaDetailJSONForVoucherOperationCompleted = new System.Threading.SendOrPostCallback(this.OnGetSP_GBCVisaDetailJSONForVoucherOperationCompleted);
+            }
+            this.InvokeAsync("GetSP_GBCVisaDetailJSONForVoucher", new object[] {
+                        AccYear,
+                        BarCode}, this.GetSP_GBCVisaDetailJSONForVoucherOperationCompleted, userState);
+        }
+        
+        private void OnGetSP_GBCVisaDetailJSONForVoucherOperationCompleted(object arg) {
+            if ((this.GetSP_GBCVisaDetailJSONForVoucherCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.GetSP_GBCVisaDetailJSONForVoucherCompleted(this, new GetSP_GBCVisaDetailJSONForVoucherCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
             }
         }
         
@@ -325,6 +361,32 @@ namespace AccWebService.HPAGBCWebService {
         private object[] results;
         
         internal GetSP_GBCVisaDetailJSONCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
+                base(exception, cancelled, userState) {
+            this.results = results;
+        }
+        
+        /// <remarks/>
+        public string Result {
+            get {
+                this.RaiseExceptionIfNecessary();
+                return ((string)(this.results[0]));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
+    public delegate void GetSP_GBCVisaDetailJSONForVoucherCompletedEventHandler(object sender, GetSP_GBCVisaDetailJSONForVoucherCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class GetSP_GBCVisaDetailJSONForVoucherCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
+        
+        private object[] results;
+        
+        internal GetSP_GBCVisaDetailJSONForVoucherCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
                 base(exception, cancelled, userState) {
             this.results = results;
         }
