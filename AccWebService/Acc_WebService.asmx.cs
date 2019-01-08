@@ -37,7 +37,7 @@ namespace AccWebService
         /// <param name="fundNo"></param>
         /// <param name="acmWordNum"></param>
         /// <returns></returns>
-        public string GetVw_GBCVisaDetail(string fundNo, string acmWordNum, string AccYear)
+        public string GetVw_GBCVisaDetail(string fundNo, string acmWordNum, string AccYear, string UnitNo)
         {
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateServerCertificate);
             GBCVisaDetailAbateDetailDAO dao = new GBCVisaDetailAbateDetailDAO();
@@ -69,11 +69,11 @@ namespace AccWebService
             //宣告接收從預控端取得之JSON字串
             string JSONReturn = "";
 
-            //先判斷基金代號
+            //先判斷基金代號，到該資料庫取ViewData
             if (fundNo == "010")//醫發服務參考
             {
                 GBCWebService.GBCWebService ws = new GBCWebService.GBCWebService();
-                JSONReturn = ws.GetVw_GBCVisaDetailJSON(AccYear, acmWordNum); //呼叫預控的服務,取得此動支編號的view資料
+                JSONReturn = ws.GetVw_GBCVisaDetailJSON(AccYear, acmWordNum, UnitNo); //呼叫預控的服務,取得此動支編號的view資料
             }
             else if (fundNo == "040")//菸害服務參考
             {
@@ -84,17 +84,17 @@ namespace AccWebService
             else if (fundNo == "090")//家防服務參考
             {
                 DVGBCWebService.GBCWebService ws = new DVGBCWebService.GBCWebService();
-                JSONReturn = ws.GetVw_GBCVisaDetailJSON(AccYear, acmWordNum); //呼叫預控的服務,取得此動支編號的view資料
+                JSONReturn = ws.GetVw_GBCVisaDetailJSON(AccYear, acmWordNum, UnitNo); //呼叫預控的服務,取得此動支編號的view資料
             }
             else if (fundNo == "100")//長照
             {
                 LCGBCWebService.GBCWebService ws = new LCGBCWebService.GBCWebService();
-                JSONReturn = ws.GetVw_GBCVisaDetailJSON(AccYear, acmWordNum); //呼叫預控的服務,取得此動支編號的view資料
+                JSONReturn = ws.GetVw_GBCVisaDetailJSON(AccYear, acmWordNum, UnitNo); //呼叫預控的服務,取得此動支編號的view資料
             }
             else if (fundNo == "110")//生產
             {
                 BAGBCWebService.GBCWebService ws = new BAGBCWebService.GBCWebService();
-                JSONReturn = ws.GetVw_GBCVisaDetailJSON(AccYear, acmWordNum); //呼叫預控的服務,取得此動支編號的view資料
+                JSONReturn = ws.GetVw_GBCVisaDetailJSON(AccYear, acmWordNum, UnitNo); //呼叫預控的服務,取得此動支編號的view資料
             }
             else
             {
@@ -102,28 +102,28 @@ namespace AccWebService
             }
 
             //如果沒找到資料,改找JOSN2有沒有資料
-            string[] strs = acmWordNum.Split('-');
-            if (JSONReturn.Contains("查無") && strs[1] == "2" && fundNo != "040")
-            {
-                string JSON2AcmWordNum = strs[0];
-                string JSON2AccNo = strs[2];
-                string JSON2 = jsonDAO.FindJSON2(x => x.基金代碼 == fundNo && x.PFK_會計年度 == AccYear && x.PFK_動支編號 == JSON2AcmWordNum && x.PFK_種類 == "核銷" && x.PFK_次別 == JSON2AccNo);
-                //如果還是沒有找到,再看看是不是在原動支編號
-                //if (JSON2 == "")
-                //{
-                //    string NewAcmWordNum = (from s1 in  dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == fundNo && x.PK_會計年度 == AccYear && x.F_原動支編號 == JSON2AcmWordNum && x.PK_種類 == "核銷" && x.PK_次別 == JSON2AccNo) select s1.PK_動支編號).FirstOrDefault();
-                //    JSON2 = jsonDAO.FindJSON2(x => x.基金代碼 == fundNo && x.PFK_會計年度 == AccYear && x.PFK_動支編號 == NewAcmWordNum && x.PFK_種類 == "核銷" && x.PFK_次別 == JSON2AccNo);
-                //}
-                if (JSON2 == "")
-                {
-                    //查無資料
-                    return JSONReturn;
-                }
-                else
-                {
-                    return JSON2;
-                }
-            }
+            //string[] strs = acmWordNum.Split('-');
+            //if (JSONReturn.Contains("查無") && strs[1] == "2" && fundNo != "040")
+            //{
+            //    string JSON2AcmWordNum = strs[0];
+            //    string JSON2AccNo = strs[2];
+            //    string JSON2 = jsonDAO.FindJSON2(x => x.基金代碼 == fundNo && x.PFK_會計年度 == AccYear && x.PFK_動支編號 == JSON2AcmWordNum && x.PFK_種類 == "核銷" && x.PFK_次別 == JSON2AccNo);
+            //    //如果還是沒有找到,再看看是不是在原動支編號
+            //    //if (JSON2 == "")
+            //    //{
+            //    //    string NewAcmWordNum = (from s1 in  dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == fundNo && x.PK_會計年度 == AccYear && x.F_原動支編號 == JSON2AcmWordNum && x.PK_種類 == "核銷" && x.PK_次別 == JSON2AccNo) select s1.PK_動支編號).FirstOrDefault();
+            //    //    JSON2 = jsonDAO.FindJSON2(x => x.基金代碼 == fundNo && x.PFK_會計年度 == AccYear && x.PFK_動支編號 == NewAcmWordNum && x.PFK_種類 == "核銷" && x.PFK_次別 == JSON2AccNo);
+            //    //}
+            //    if (JSON2 == "")
+            //    {
+            //        //查無資料
+            //        return JSONReturn;
+            //    }
+            //    else
+            //    {
+            //        return JSON2;
+            //    }
+            //}
 
             try
             {
@@ -330,6 +330,7 @@ namespace AccWebService
                     vw_GBCVisaDetail.PK_動支編號 = vwListItem.PK_動支編號;
                     vw_GBCVisaDetail.PK_種類 = vwListItem.PK_種類;
                     vw_GBCVisaDetail.PK_次別 = vwListItem.PK_次別;
+                    vw_GBCVisaDetail.PK_系統號 = vwListItem.PK_系統號;
                     vw_GBCVisaDetail.PK_明細號 = vwListItem.PK_明細號;
                     vw_GBCVisaDetail.F_科室代碼 = vwListItem.F_科室代碼;
                     vw_GBCVisaDetail.F_用途別代碼 = vwListItem.F_用途別代碼;
@@ -565,24 +566,50 @@ namespace AccWebService
                             明細號 = vw_GBCVisaDetail.PK_明細號
                         };
 
-                        var estVouNo = dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == vw_GBCVisaDetail.基金代碼 && x.PK_會計年度 == vw_GBCVisaDetail.PK_會計年度 && x.PK_動支編號 == vw_GBCVisaDetail.PK_動支編號 && x.PK_種類 == "估列" && x.F_受款人編號 == vw_GBCVisaDetail.F_受款人編號).OrderBy(x => x.F_製票日期1).FirstOrDefault();
+                        //取沖轉字號
+                        string abateEstVouNo = "";
+                        //根據預控資料表tsbPayOffset表查沖轉字號(YYY-XXXXXX)
+                        abateEstVouNo = GetAbateVouNoEst(fundNo, vw_GBCVisaDetail.PK_會計年度, vw_GBCVisaDetail.PK_系統號, vw_GBCVisaDetail.PK_次別, vw_GBCVisaDetail.PK_明細號);
 
-                        if (estVouNo != null)
+                        if (abateEstVouNo != "")
                         {
-                            string estVouYear = estVouNo.F_傳票年度;
-                            string estVouMainNo = estVouNo.F_傳票號1;
-                            string estVouDtlNo = estVouNo.F_傳票明細號1.ToString();
-                            vouDtl_D1.沖轉字號 = estVouYear + "-" + estVouMainNo + "-" + estVouDtlNo;
-                            if (estVouYear != (DateTime.Now.Year - 1911).ToString())
+                            string[] VouArray = abateEstVouNo.Split('-');
+                            string tmpVouNoYear = VouArray[0];
+                            string tmpVouNo = VouArray[1];
+
+                            var EstRecord = dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == vw_GBCVisaDetail.基金代碼  && x.PK_種類 == "估列" && x.F_受款人編號 == vw_GBCVisaDetail.F_受款人編號 && x.F_傳票年度 == tmpVouNoYear && x.F_傳票號1 == tmpVouNo).OrderBy(x => x.F_製票日期1).FirstOrDefault();
+                            if (EstRecord != null)
                             {
+                                abateEstVouNo = abateEstVouNo + "-" + EstRecord.F_傳票明細號1;
+                            }
+
+                            vouDtl_D1.沖轉字號 = abateEstVouNo;
+                            if (abateEstVouNo.Substring(0, 3) != vw_GBCVisaDetail.PK_會計年度)
+                            {
+                                //沖銷以前年度時,不要帶計畫、用途別
                                 vouDtl_D1.計畫代碼 = "";
                                 vouDtl_D1.用途別代碼 = "";
                             }
                         }
-                        else
-                        {
-                            vouDtl_D1.沖轉字號 = "";
-                        }
+
+                        //var estVouNo = dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == vw_GBCVisaDetail.基金代碼 && x.PK_會計年度 == vw_GBCVisaDetail.PK_會計年度 && x.PK_動支編號 == vw_GBCVisaDetail.PK_動支編號 && x.PK_種類 == "估列" && x.F_受款人編號 == vw_GBCVisaDetail.F_受款人編號).OrderBy(x => x.F_製票日期1).FirstOrDefault();
+
+                        //if (estVouNo != null)
+                        //{
+                        //    string estVouYear = estVouNo.F_傳票年度;
+                        //    string estVouMainNo = estVouNo.F_傳票號1;
+                        //    string estVouDtlNo = estVouNo.F_傳票明細號1.ToString();
+                        //    vouDtl_D1.沖轉字號 = estVouYear + "-" + estVouMainNo + "-" + estVouDtlNo;
+                        //    if (estVouYear != (DateTime.Now.Year - 1911).ToString())
+                        //    {
+                        //        vouDtl_D1.計畫代碼 = "";
+                        //        vouDtl_D1.用途別代碼 = "";
+                        //    }
+                        //}
+                        //else
+                        //{
+                        //    vouDtl_D1.沖轉字號 = "";
+                        //}
 
                         vouDtlList.Add(vouDtl_D1);
 
@@ -701,34 +728,53 @@ namespace AccWebService
                                 return e.Message;
                             }
 
-                            double preAmount = 0;
-                            double preAmount_tot = 0;
-                            double abatAmount_tot = 0;
+                            //double preAmount = 0;
+                            //double preAmount_tot = 0;
+                            //double abatAmount_tot = 0;
+                            //string abatePreVouNo = "";
+
+                            //var prepayList = dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == vw_GBCVisaDetail.基金代碼 && x.PK_會計年度 == vw_GBCVisaDetail.PK_會計年度 && x.PK_動支編號 == vw_GBCVisaDetail.PK_動支編號 && x.PK_種類 =="預付" && x.F_受款人編號 == vw_GBCVisaDetail.F_受款人編號).OrderBy(x => x.F_製票日期1).ToList();
+                            ////預付總額
+                            //preAmount_tot = double.Parse((from s1 in prepayList select s1.F_核定金額).Sum().ToString());  
+
+                            ////算已轉正金額
+                            //foreach (var prepayListItem in prepayList)
+                            //{
+                            //    string preVouYear = prepayListItem.F_傳票年度;
+                            //    string preVouNo = prepayListItem.F_傳票號1;
+                            //    string preVouDtlNo = prepayListItem.F_傳票明細號1.ToString();
+                            //    var tmpPreVoDetail = vouDetailDAO.GetVouDetail(x => x.FundNo == prepayListItem.基金代碼 && x.RelatedVouNo == preVouYear + "-" + preVouNo + "-" + preVouDtlNo && x.DC == "貸" && x.SubNo == "1154").ToList();
+
+                            //    var tmpAbatMoney = tmpPreVoDetail == null? 0 : (from m1 in tmpPreVoDetail select m1.Amount).Sum();
+                            //    abatAmount_tot = abatAmount_tot + double.Parse(tmpAbatMoney.ToString());
+                            //}
+
+                            ////判斷沖轉字號(預付明細疊加 - 已沖總額 是否大於等於本次報支金額，若true就帶本列預付傳票號)
+                            //foreach (var prepayListItem in prepayList)
+                            //{
+                            //    preAmount = preAmount + double.Parse(prepayListItem.F_核定金額.ToString());
+                            //    if (preAmount - abatAmount_tot >= vw_GBCVisaDetail.F_核定金額)
+                            //    {
+                            //        abatePreVouNo = prepayListItem.PK_會計年度 + "-" + prepayListItem.F_傳票號1 + "-" + prepayListItem.F_傳票明細號1;
+                            //    }
+                            //}
+
                             string abatePreVouNo = "";
 
-                            var prepayList = dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == vw_GBCVisaDetail.基金代碼 && x.PK_會計年度 == vw_GBCVisaDetail.PK_會計年度 && x.PK_動支編號 == vw_GBCVisaDetail.PK_動支編號 && x.PK_種類 =="預付" && x.F_受款人編號 == vw_GBCVisaDetail.F_受款人編號).OrderBy(x => x.F_製票日期1).ToList();
-                            //預付總額
-                            preAmount_tot = double.Parse((from s1 in prepayList select s1.F_核定金額).Sum().ToString());  
+                            //根據預控資料表tsbPayOffset表查沖轉字號(YYY-XXXXXX)
+                            abatePreVouNo = GetAbateVouNoPre(fundNo, vw_GBCVisaDetail.PK_會計年度, vw_GBCVisaDetail.PK_系統號, vw_GBCVisaDetail.PK_次別, vw_GBCVisaDetail.PK_明細號);
 
-                            //算已轉正金額
-                            foreach (var prepayListItem in prepayList)
+                            if (abatePreVouNo != "")
                             {
-                                string preVouYear = prepayListItem.F_傳票年度;
-                                string preVouNo = prepayListItem.F_傳票號1;
-                                string preVouDtlNo = prepayListItem.F_傳票明細號1.ToString();
-                                var tmpPreVoDetail = vouDetailDAO.GetVouDetail(x => x.FundNo == prepayListItem.基金代碼 && x.RelatedVouNo == preVouYear + "-" + preVouNo + "-" + preVouDtlNo && x.DC == "貸" && x.SubNo == "1154").ToList();
-                                
-                                var tmpAbatMoney = tmpPreVoDetail == null? 0 : (from m1 in tmpPreVoDetail select m1.Amount).Sum();
-                                abatAmount_tot = abatAmount_tot + double.Parse(tmpAbatMoney.ToString());
-                            }
+                                string[] VouArray = abatePreVouNo.Split('-');
+                                string tmpVouNoYear = VouArray[0];
+                                string tmpVouNo = VouArray[1];
 
-                            //判斷沖轉字號(預付明細疊加 - 已沖總額 是否大於等於本次報支金額，若true就帶本列預付傳票號)
-                            foreach (var prepayListItem in prepayList)
-                            {
-                                preAmount = preAmount + double.Parse(prepayListItem.F_核定金額.ToString());
-                                if (preAmount - abatAmount_tot >= vw_GBCVisaDetail.F_核定金額)
+                                //因回傳沒有傳票明細號,所以從NPSF記錄表來查詢當時開立的傳票明細號
+                                var PrePayRecord = dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == vw_GBCVisaDetail.基金代碼 && x.PK_種類 == "預付" && x.F_受款人編號 == vw_GBCVisaDetail.F_受款人編號 && x.F_傳票年度 == tmpVouNoYear && x.F_傳票號1 == tmpVouNo).OrderBy(x => x.F_製票日期1).FirstOrDefault();
+                                if (PrePayRecord != null)
                                 {
-                                    abatePreVouNo = prepayListItem.PK_會計年度 + "-" + prepayListItem.F_傳票號1 + "-" + prepayListItem.F_傳票明細號1;
+                                    abatePreVouNo = abatePreVouNo + "-" + PrePayRecord.F_傳票明細號1;
                                 }
                             }
 
@@ -741,7 +787,6 @@ namespace AccWebService
                                 金額 = vw_GBCVisaDetail.預付轉正,
                                 計畫代碼 = vw_GBCVisaDetail.F_計畫代碼,
                                 用途別代碼 = vw_GBCVisaDetail.F_用途別代碼,
-                                //沖轉字號 = abatePrePayVouYear.ElementAt(abateCnt) + "-" + abatePrePayVouNo.ElementAt(abateCnt) + "-" + abatePrePayVouDtlNo.ElementAt(abateCnt),
                                 沖轉字號 = abatePreVouNo,
                                 對象代碼 = "",
                                 對象說明 = "",
@@ -791,26 +836,52 @@ namespace AccWebService
                                 vouDtl_D.科目代號 = "2125";
                                 vouDtl_D.科目名稱 = "應付費用";
                                 vouDtl_D.金額 = vw_GBCVisaDetail.沖抵估列;
-                                var estVouNo = dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == vw_GBCVisaDetail.基金代碼 && x.PK_會計年度 == vw_GBCVisaDetail.PK_會計年度 && x.PK_動支編號 == vw_GBCVisaDetail.PK_動支編號 && x.PK_種類 == "估列" && x.F_受款人編號 == vw_GBCVisaDetail.F_受款人編號).OrderBy(x => x.F_製票日期1).FirstOrDefault();
 
-                                if (estVouNo != null)
+                                string abateEstVouNo = "";
+                                //根據預控資料表tsbPayOffset表查沖轉字號(YYY-XXXXXX)
+                                abateEstVouNo = GetAbateVouNoEst(fundNo, vw_GBCVisaDetail.PK_會計年度, vw_GBCVisaDetail.PK_系統號, vw_GBCVisaDetail.PK_次別, vw_GBCVisaDetail.PK_明細號);
+
+                                if (abateEstVouNo != "")
                                 {
-                                    string estVouYear = estVouNo.F_傳票年度;
-                                    string estVouMainNo = estVouNo.F_傳票號1;
-                                    string estVouDtlNo = estVouNo.F_傳票明細號1.ToString();
-                                    vouDtl_D.沖轉字號 = estVouYear + "-" + estVouMainNo + "-" + estVouDtlNo;
+                                    string[] VouArray = abateEstVouNo.Split('-');
+                                    string tmpVouNoYear = VouArray[0];
+                                    string tmpVouNo = VouArray[1];
 
-                                    if (estVouYear != (DateTime.Now.Year - 1911).ToString())
+                                    var EstRecord = dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == vw_GBCVisaDetail.基金代碼 && x.PK_種類 == "估列" && x.F_受款人編號 == vw_GBCVisaDetail.F_受款人編號 && x.F_傳票年度 == tmpVouNoYear && x.F_傳票號1 == tmpVouNo).OrderBy(x => x.F_製票日期1).FirstOrDefault();
+                                    if (EstRecord != null)
                                     {
+                                        abateEstVouNo = abateEstVouNo + "-" + EstRecord.F_傳票明細號1;
+                                    }
+
+                                    vouDtl_D.沖轉字號 = abateEstVouNo;
+                                    if (abateEstVouNo.Substring(0, 3) != vw_GBCVisaDetail.PK_會計年度)
+                                    {
+                                        //沖銷以前年度時,不要帶計畫、用途別
                                         vouDtl_D.計畫代碼 = "";
                                         vouDtl_D.用途別代碼 = "";
                                     }
                                 }
-                                else
-                                {
-                                    vouDtl_D.沖轉字號 = "";
-                                }
-                                
+
+                                //var estVouNo = dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == vw_GBCVisaDetail.基金代碼 && x.PK_會計年度 == vw_GBCVisaDetail.PK_會計年度 && x.PK_動支編號 == vw_GBCVisaDetail.PK_動支編號 && x.PK_種類 == "估列" && x.F_受款人編號 == vw_GBCVisaDetail.F_受款人編號).OrderBy(x => x.F_製票日期1).FirstOrDefault();
+
+                                //if (estVouNo != null)
+                                //{
+                                //    string estVouYear = estVouNo.F_傳票年度;
+                                //    string estVouMainNo = estVouNo.F_傳票號1;
+                                //    string estVouDtlNo = estVouNo.F_傳票明細號1.ToString();
+                                //    vouDtl_D.沖轉字號 = estVouYear + "-" + estVouMainNo + "-" + estVouDtlNo;
+
+                                //    if (estVouYear != (DateTime.Now.Year - 1911).ToString())
+                                //    {
+                                //        vouDtl_D.計畫代碼 = "";
+                                //        vouDtl_D.用途別代碼 = "";
+                                //    }
+                                //}
+                                //else
+                                //{
+                                //    vouDtl_D.沖轉字號 = "";
+                                //}
+
                             }
 
                             if (int.Parse(vw_GBCVisaDetail.PK_動支編號.Substring(0, 3)) < (DateTime.Now.Year - 1911))
@@ -849,12 +920,30 @@ namespace AccWebService
                                     金額 = vw_GBCVisaDetail.費用,
                                     計畫代碼 = vw_GBCVisaDetail.F_計畫代碼,
                                     用途別代碼 = vw_GBCVisaDetail.F_用途別代碼,
-                                    //沖轉字號 = abatePrePayVouYear.ElementAt(abateCnt) + "-" + abatePrePayVouNo.ElementAt(abateCnt) + "-" + abatePrePayVouDtlNo.ElementAt(abateCnt),
-                                    沖轉字號 = abatePreVouNo,
+                                    沖轉字號 = "",
                                     對象代碼 = "",
                                     對象說明 = "",
                                     明細號 = vw_GBCVisaDetail.PK_明細號
                                 };
+
+                                abatePreVouNo = "";
+
+                                //根據預控資料表tsbPayOffset表查沖轉字號(YYY-XXXXXX)
+                                abatePreVouNo = GetAbateVouNoPre(fundNo, vw_GBCVisaDetail.PK_會計年度, vw_GBCVisaDetail.PK_系統號, vw_GBCVisaDetail.PK_次別, vw_GBCVisaDetail.PK_明細號);
+
+                                if (abatePreVouNo != "")
+                                {
+                                    string[] VouArray = abatePreVouNo.Split('-');
+                                    string tmpVouNoYear = VouArray[0];
+                                    string tmpVouNo = VouArray[1];
+
+                                    //因回傳沒有傳票明細號,所以從NPSF記錄表來查詢當時開立的傳票明細號
+                                    var PrePayRecord = dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == vw_GBCVisaDetail.基金代碼 && x.PK_種類 == "預付" && x.F_受款人編號 == vw_GBCVisaDetail.F_受款人編號 && x.F_傳票年度 == tmpVouNoYear && x.F_傳票號1 == tmpVouNo).OrderBy(x => x.F_製票日期1).FirstOrDefault();
+                                    if (PrePayRecord != null)
+                                    {
+                                        abatePreVouNo = abatePreVouNo + "-" + PrePayRecord.F_傳票明細號1;
+                                    }
+                                }
 
                                 if (int.Parse(vw_GBCVisaDetail.PK_動支編號.Substring(0, 3)) < (DateTime.Now.Year - 1911))
                                 {
@@ -960,6 +1049,25 @@ namespace AccWebService
                                     return e.Message;
                                 }
 
+                                string abatePreVouNo = "";
+
+                                //根據預控資料表tsbPayOffset表查沖轉字號(YYY-XXXXXX)
+                                abatePreVouNo = GetAbateVouNoPre(fundNo, vw_GBCVisaDetail.PK_會計年度, vw_GBCVisaDetail.PK_系統號, vw_GBCVisaDetail.PK_次別, vw_GBCVisaDetail.PK_明細號);
+
+                                if (abatePreVouNo != "")
+                                {
+                                    string[] VouArray = abatePreVouNo.Split('-');
+                                    string tmpVouNoYear = VouArray[0];
+                                    string tmpVouNo = VouArray[1];
+
+                                    //因回傳沒有傳票明細號,所以從NPSF記錄表來查詢當時開立的傳票明細號
+                                    var PrePayRecord = dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == vw_GBCVisaDetail.基金代碼 && x.PK_種類 == "預付" && x.F_受款人編號 == vw_GBCVisaDetail.F_受款人編號 && x.F_傳票年度 == tmpVouNoYear && x.F_傳票號1 == tmpVouNo).OrderBy(x => x.F_製票日期1).FirstOrDefault();
+                                    if (PrePayRecord != null)
+                                    {
+                                        abatePreVouNo = abatePreVouNo + "-" + PrePayRecord.F_傳票明細號1;
+                                    }
+                                }
+
                                 傳票明細 vouDtl_C = new 傳票明細()
                                 {
                                     借貸別 = "貸",
@@ -970,7 +1078,7 @@ namespace AccWebService
                                     計畫代碼 = vw_GBCVisaDetail.F_計畫代碼,
                                     用途別代碼 = vw_GBCVisaDetail.F_用途別代碼,
                                     //沖轉字號 = abatePrePayVouYear.ElementAt(abateCnt) + "-" + abatePrePayVouNo.ElementAt(abateCnt) + "-" + abatePrePayVouDtlNo.ElementAt(abateCnt),
-                                    沖轉字號 = "",
+                                    沖轉字號 = abatePreVouNo,
                                     對象代碼 = "",
                                     對象說明 = "",
                                     明細號 = vw_GBCVisaDetail.PK_明細號
@@ -1025,6 +1133,7 @@ namespace AccWebService
                                 };
                                 vouPayList.Add(vouPay);
 
+                                #region 菸金特規
                                 if (fundNo == "040")
                                 {
                                     vouDtl_D = new 傳票明細();
@@ -1071,6 +1180,7 @@ namespace AccWebService
 
                                     vouDtlList.Add(vouDtl_C);
                                 }
+                                #endregion
 
                                 //vouMain.傳票種類 = "4";
                                 //菸害基金不用開第二張傳票，統一開在現金轉帳傳票
@@ -1208,6 +1318,25 @@ namespace AccWebService
                                     return e.Message;
                                 }
 
+                                string abatePreVouNo = "";
+
+                                //根據預控資料表tsbPayOffset表查沖轉字號(YYY-XXXXXX)
+                                abatePreVouNo = GetAbateVouNoPre(fundNo, vw_GBCVisaDetail.PK_會計年度, vw_GBCVisaDetail.PK_系統號, vw_GBCVisaDetail.PK_次別, vw_GBCVisaDetail.PK_明細號);
+
+                                if (abatePreVouNo != "")
+                                {
+                                    string[] VouArray = abatePreVouNo.Split('-');
+                                    string tmpVouNoYear = VouArray[0];
+                                    string tmpVouNo = VouArray[1];
+
+                                    //因回傳沒有傳票明細號,所以從NPSF記錄表來查詢當時開立的傳票明細號
+                                    var PrePayRecord = dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == vw_GBCVisaDetail.基金代碼  && x.PK_種類 == "預付" && x.F_受款人編號 == vw_GBCVisaDetail.F_受款人編號 && x.F_傳票年度 == tmpVouNoYear && x.F_傳票號1 == tmpVouNo).OrderBy(x => x.F_製票日期1).FirstOrDefault();
+                                    if (PrePayRecord != null)
+                                    {
+                                        abatePreVouNo = abatePreVouNo + "-" + PrePayRecord.F_傳票明細號1;
+                                    }
+                                }
+
                                 傳票明細 vouDtl_C = new 傳票明細()
                                 {
                                     借貸別 = "貸",
@@ -1218,7 +1347,7 @@ namespace AccWebService
                                     計畫代碼 = vw_GBCVisaDetail.F_計畫代碼,
                                     用途別代碼 = vw_GBCVisaDetail.F_用途別代碼,
                                     //沖轉字號 = abatePrePayVouYear.ElementAt(abateCnt) + "-" + abatePrePayVouNo.ElementAt(abateCnt) + "-" + abatePrePayVouDtlNo.ElementAt(abateCnt),
-                                    沖轉字號 = "",
+                                    沖轉字號 = abatePreVouNo,
                                     對象代碼 = "",
                                     對象說明 = "",
                                     明細號 = vw_GBCVisaDetail.PK_明細號
@@ -1247,6 +1376,32 @@ namespace AccWebService
                                     對象說明 = vw_GBCVisaDetail.F_受款人,
                                     明細號 = vw_GBCVisaDetail.PK_明細號
                                 };
+
+                                //取估列沖轉字號
+                                string abateEstVouNo = "";
+                                //根據預控資料表tsbPayOffset表查沖轉字號(YYY-XXXXXX)
+                                abateEstVouNo = GetAbateVouNoEst(fundNo, vw_GBCVisaDetail.PK_會計年度, vw_GBCVisaDetail.PK_系統號, vw_GBCVisaDetail.PK_次別, vw_GBCVisaDetail.PK_明細號);
+
+                                if (abateEstVouNo != "")
+                                {
+                                    string[] VouArray = abateEstVouNo.Split('-');
+                                    string tmpVouNoYear = VouArray[0];
+                                    string tmpVouNo = VouArray[1];
+
+                                    var EstRecord = dao.GetGBCVisaDetailAbateDetail(x => x.基金代碼 == vw_GBCVisaDetail.基金代碼 && x.PK_種類 == "估列" && x.F_受款人編號 == vw_GBCVisaDetail.F_受款人編號 && x.F_傳票年度 == tmpVouNoYear && x.F_傳票號1 == tmpVouNo).OrderBy(x => x.F_製票日期1).FirstOrDefault();
+                                    if (EstRecord != null)
+                                    {
+                                        abateEstVouNo = abateEstVouNo + "-" + EstRecord.F_傳票明細號1;
+                                    }
+
+                                    vouDtl_D.沖轉字號 = abateEstVouNo;
+                                    if (abateEstVouNo.Substring(0, 3) != vw_GBCVisaDetail.PK_會計年度)
+                                    {
+                                        //沖銷以前年度時,不要帶計畫、用途別
+                                        vouDtl_D.計畫代碼 = "";
+                                        vouDtl_D.用途別代碼 = "";
+                                    }
+                                }
 
                                 if (int.Parse(vw_GBCVisaDetail.PK_動支編號.Substring(0, 3)) < (DateTime.Now.Year - 1911))
                                 {
@@ -1278,7 +1433,7 @@ namespace AccWebService
                                 };
                                 vouPayList.Add(vouPay);
 
-
+                                #region 菸金特規
                                 if (fundNo == "040")
                                 {
                                     //借方
@@ -1317,6 +1472,7 @@ namespace AccWebService
                                     vouDtl_C.明細號 = vw_GBCVisaDetail.PK_明細號;
                                     vouDtlList.Add(vouDtl_C);
                                 }
+                                #endregion
 
                                 //vouMain.傳票種類 = "4";
                                 //菸害基金不用開第二張傳票，統一開在現金轉帳傳票
@@ -1339,6 +1495,9 @@ namespace AccWebService
                                 vouTop.傳票內容 = vouCollectionList;
 
                                 //------支出傳票，菸害基金不用額外加開支出傳票------
+                                #region 菸害基金特規
+
+                                
                                 if (fundNo != "040")
                                 {
                                     傳票明細 vouDtl_D2 = new 傳票明細()
@@ -1426,7 +1585,8 @@ namespace AccWebService
                                         明細號 = vw_GBCVisaDetail.PK_明細號,
                                         傳票內容 = vouCollectionList2
                                     };
-                                }                               
+                                }
+                                #endregion
                             }
                             #endregion
 
@@ -2142,7 +2302,7 @@ namespace AccWebService
 
         #region 菸金用WebService
         [WebMethod]
-        //菸金用傳票就源
+        //菸金用傳票就源(已停用)
         public string GetSP_HPAGBCVisaDetail(string fundNo,string accYear, string acmWordNum, string AccType)
         {
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateServerCertificate);
@@ -3717,6 +3877,17 @@ namespace AccWebService
             return result;
         }
 
+        [WebMethod]
+        //將出納待收之資料收回
+        public string DeleteVouDataToCashier(string VouJSON)
+        {
+            string result = "";
+            HPAGBCWebService.HPAGBCWebService ws = new HPAGBCWebService.HPAGBCWebService();
+            result = ws.DeleteVouDataFromNPSF(VouJSON);
+
+            return result;
+        }
+
         #endregion
         [WebMethod]
         /// <summary>
@@ -3996,7 +4167,7 @@ namespace AccWebService
         }
         [WebMethod]
         //除菸金外的估列回填
-        public string FillVouNoForEstimate(string fundNo, string AccYear, string batch, string VouNo)
+        public string FillVouNoForEstimate(string fundNo, string AccYear, string batch, string VouNo, string VouDate)
         {
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateServerCertificate);
             GBCVisaDetailAbateDetailDAO dao = new GBCVisaDetailAbateDetailDAO();
@@ -4004,6 +4175,59 @@ namespace AccWebService
 
             dao.FillVouNoForEstimate(fundNo, AccYear, batch, VouNo);
             jsonDAO.UpdatePassFlgForEstimate(fundNo, AccYear, batch);
+
+            #region 傳票號回寫至預控系統
+            //傳票號回寫至預控系統
+            //由Web.Config來開關是否回填至預控系統
+            string isFillToGBC = WebConfigurationManager.AppSettings["isFillToGBC"];
+
+            if ((isFillToGBC.Trim()).Equals("1"))
+            {
+                //以預控來說，0是第1次估列、1是第2次估列
+                if (batch == "2")
+                {
+                    batch = "1";
+                }
+                else if (batch == "1")
+                {
+                    batch = "0";
+                }
+                else
+                {
+                    batch = "";
+                }
+
+                //判斷基金代號,回填至對應的預控系統(GBC)
+                if (fundNo == "010")//醫發服務參考
+                {
+                    GBCWebService.GBCWebService ws = new GBCWebService.GBCWebService();
+                    ws.FillVouNoEstimate(AccYear,batch,VouNo, VouDate);
+                }
+                else if (fundNo == "040")//菸害****尚未加入服務參考****
+                {
+                    //HPAGBCWebService.HPAGBCWebService ws = new HPAGBCWebService.HPAGBCWebService();
+                    //ws.FillVouNoEstimate(gbcVisaDetailAbateDetail.PK_會計年度, gbcVisaDetailAbateDetail.PK_動支編號, gbcVisaDetailAbateDetail.PK_種類, gbcVisaDetailAbateDetail.PK_次別, gbcVisaDetailAbateDetail.PK_明細號, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1, gbcVisaDetailAbateDetail.F_傳票號1, gbcVisaDetailAbateDetail.F_製票日期1);
+                }
+                else if (fundNo == "090")//家防服務參考
+                {
+                    DVGBCWebService.GBCWebService ws = new DVGBCWebService.GBCWebService();
+                    ws.FillVouNoEstimate(AccYear, batch, VouNo, VouDate);
+
+                }
+                else if (fundNo == "100")//長照
+                {
+                    LCGBCWebService.GBCWebService ws = new LCGBCWebService.GBCWebService();
+                    ws.FillVouNoEstimate(AccYear, batch, VouNo, VouDate);
+
+                }
+                else if (fundNo == "110")//生產
+                {
+                    BAGBCWebService.GBCWebService ws = new BAGBCWebService.GBCWebService();
+                    ws.FillVouNoEstimate(AccYear, batch, VouNo, VouDate);
+
+                }
+            }
+            #endregion
 
             return "回填完畢";
         }
@@ -4068,7 +4292,7 @@ namespace AccWebService
         /// <param name="fundNo"></param>
         /// <param name="accYear"></param>
         /// <returns></returns>
-        public List<string> GetAcmWordNum(string fundNo, string accYear)
+        public List<string> GetAcmWordNum(string fundNo, string accYear, string UnitNo)
         {
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateServerCertificate);
             //先判斷基金代號
@@ -4076,7 +4300,7 @@ namespace AccWebService
             {
                 GBCWebService.GBCWebService ws = new GBCWebService.GBCWebService();
                 List<string> acmNoList = new List<string>(
-                    ws.GetAcmWordNum(accYear));
+                    ws.GetAcmWordNum(accYear, UnitNo));
 
                 return acmNoList;
             }
@@ -4092,7 +4316,7 @@ namespace AccWebService
             {
                 DVGBCWebService.GBCWebService ws = new DVGBCWebService.GBCWebService();
                 List<string> acmNoList = new List<string>(
-                    ws.GetAcmWordNum(accYear));
+                    ws.GetAcmWordNum(accYear, UnitNo));
 
                 return acmNoList;
             }
@@ -4100,7 +4324,7 @@ namespace AccWebService
             {
                 LCGBCWebService.GBCWebService ws = new LCGBCWebService.GBCWebService();
                 List<string> acmNoList = new List<string>(
-                    ws.GetAcmWordNum(accYear));
+                    ws.GetAcmWordNum(accYear, UnitNo));
 
                 return acmNoList;
             }
@@ -4108,7 +4332,7 @@ namespace AccWebService
             {
                 BAGBCWebService.GBCWebService ws = new BAGBCWebService.GBCWebService();
                 List<string> acmNoList = new List<string>(
-                    ws.GetAcmWordNum(accYear));
+                    ws.GetAcmWordNum(accYear, UnitNo));
 
                 return acmNoList;
             }
@@ -4126,14 +4350,14 @@ namespace AccWebService
         /// <param name="accYear"></param>
         /// <param name="acmWordNum"></param>
         /// <returns></returns>
-        public List<string> GetAccKind(string fundNo, string accYear, string acmWordNum)
+        public List<string> GetAccKind(string fundNo, string accYear, string acmWordNum, string UnitNo)
         {
             //先判斷基金代號
             if (fundNo == "010")//醫發服務參考
             {
                 GBCWebService.GBCWebService ws = new GBCWebService.GBCWebService();
                 List<string> accKindList = new List<string>(
-                    ws.GetAccKind(accYear, acmWordNum));
+                    ws.GetAccKind(accYear, acmWordNum, UnitNo));
                 return accKindList;
             }
             //else if (fundNo == "040")//菸害****尚未加入服務參考****
@@ -4147,21 +4371,21 @@ namespace AccWebService
             {
                 DVGBCWebService.GBCWebService ws = new DVGBCWebService.GBCWebService();
                 List<string> accKindList = new List<string>(
-                    ws.GetAccKind(accYear, acmWordNum));
+                    ws.GetAccKind(accYear, acmWordNum, UnitNo));
                 return accKindList;
             }
             else if (fundNo == "100")//長照****尚未加入服務參考****
             {
                 LCGBCWebService.GBCWebService ws = new LCGBCWebService.GBCWebService();
                 List<string> accKindList = new List<string>(
-                    ws.GetAccKind(accYear, acmWordNum));
+                    ws.GetAccKind(accYear, acmWordNum, UnitNo));
                 return accKindList;
             }
             else if (fundNo == "110")//生產****尚未加入服務參考****
             {
                 BAGBCWebService.GBCWebService ws = new BAGBCWebService.GBCWebService();
                 List<string> accKindList = new List<string>(
-                    ws.GetAccKind(accYear, acmWordNum));
+                    ws.GetAccKind(accYear, acmWordNum, UnitNo));
                 return accKindList;
             }
             else
@@ -4179,7 +4403,7 @@ namespace AccWebService
         /// <param name="acmWordNum"></param>
         /// <param name="accKind"></param>
         /// <returns></returns>
-        public List<string> GetAccCount(string fundNo, string accYear, string acmWordNum, string accKind)
+        public List<string> GetAccCount(string fundNo, string accYear, string acmWordNum, string accKind, string UnitNo)
         {
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateServerCertificate);
             //先判斷基金代號
@@ -4187,7 +4411,7 @@ namespace AccWebService
             {
                 GBCWebService.GBCWebService ws = new GBCWebService.GBCWebService();
                 List<string> accDetailList = new List<string>(
-                    ws.GetAccCount(accYear, acmWordNum, accKind));
+                    ws.GetAccCount(accYear, acmWordNum, accKind, UnitNo));
                 return accDetailList;
             }
             //else if (fundNo == "040")//菸害****尚未加入服務參考****
@@ -4201,21 +4425,21 @@ namespace AccWebService
             {
                 DVGBCWebService.GBCWebService ws = new DVGBCWebService.GBCWebService();
                 List<string> accDetailList = new List<string>(
-                    ws.GetAccCount(accYear, acmWordNum, accKind));
+                    ws.GetAccCount(accYear, acmWordNum, accKind, UnitNo));
                 return accDetailList;
             }
             else if (fundNo == "100")//長照****尚未加入服務參考****
             {
                 LCGBCWebService.GBCWebService ws = new LCGBCWebService.GBCWebService();
                 List<string> accDetailList = new List<string>(
-                    ws.GetAccCount(accYear, acmWordNum, accKind));
+                    ws.GetAccCount(accYear, acmWordNum, accKind, UnitNo));
                 return accDetailList;
             }
             else if (fundNo == "110")//生產****尚未加入服務參考****
             {
                 BAGBCWebService.GBCWebService ws = new BAGBCWebService.GBCWebService();
                 List<string> accDetailList = new List<string>(
-                    ws.GetAccCount(accYear, acmWordNum, accKind));
+                    ws.GetAccCount(accYear, acmWordNum, accKind, UnitNo));
                 return accDetailList;
             }
             else
@@ -4234,7 +4458,7 @@ namespace AccWebService
         /// <param name="accKind"></param>
         /// <param name="accCount"></param>
         /// <returns></returns>
-        public List<string> GetAccDetail(string fundNo, string accYear, string acmWordNum, string accKind, string accCount)
+        public List<string> GetAccDetail(string fundNo, string accYear, string acmWordNum, string accKind, string accCount, string UnitNo)
         {
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateServerCertificate);
             //先判斷基金代號
@@ -4242,7 +4466,7 @@ namespace AccWebService
             {
                 GBCWebService.GBCWebService ws = new GBCWebService.GBCWebService();
                 List<string> accDetailList = new List<string>(
-                    ws.GetAccDetail(accYear, acmWordNum, accKind, accCount));
+                    ws.GetAccDetail(accYear, acmWordNum, accKind, accCount, UnitNo));
                 return accDetailList;
             }
             //else if (fundNo == "040")//菸害****尚未加入服務參考****
@@ -4256,21 +4480,21 @@ namespace AccWebService
             {
                 DVGBCWebService.GBCWebService ws = new DVGBCWebService.GBCWebService();
                 List<string> accDetailList = new List<string>(
-                    ws.GetAccDetail(accYear, acmWordNum, accKind, accCount));
+                    ws.GetAccDetail(accYear, acmWordNum, accKind, accCount, UnitNo));
                 return accDetailList;
             }
             else if (fundNo == "100")//長照****尚未加入服務參考****
             {
                 LCGBCWebService.GBCWebService ws = new LCGBCWebService.GBCWebService();
                 List<string> accDetailList = new List<string>(
-                    ws.GetAccDetail(accYear, acmWordNum, accKind, accCount));
+                    ws.GetAccDetail(accYear, acmWordNum, accKind, accCount, UnitNo));
                 return accDetailList;
             }
             else if (fundNo == "110")//生產****尚未加入服務參考****
             {
                 BAGBCWebService.GBCWebService ws = new BAGBCWebService.GBCWebService();
                 List<string> accDetailList = new List<string>(
-                    ws.GetAccDetail(accYear, acmWordNum, accKind, accCount));
+                    ws.GetAccDetail(accYear, acmWordNum, accKind, accCount, UnitNo));
                 return accDetailList;
             }
             else
@@ -4290,14 +4514,14 @@ namespace AccWebService
         /// <param name="accCount"></param>
         /// <param name="accDetail"></param>
         /// <returns></returns>
-        public string GetByPrimaryKey(string fundNo, string accYear, string acmWordNum, string accKind, string accCount)
+        public string GetByPrimaryKey(string fundNo, string accYear, string acmWordNum, string accKind, string accCount, string UnitNo)
         {
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateServerCertificate);
             //先判斷基金代號
             if (fundNo == "010")//醫發服務參考
             {
                 GBCWebService.GBCWebService ws = new GBCWebService.GBCWebService();
-                string getGBCVisaDetail = ws.GetByPrimaryKey(accYear, acmWordNum, accKind, accCount);
+                string getGBCVisaDetail = ws.GetByPrimaryKey(accYear, acmWordNum, accKind, accCount, UnitNo);
                 return getGBCVisaDetail;
             }
             //else if (fundNo == "040")//菸害****尚未加入服務參考****
@@ -4309,19 +4533,19 @@ namespace AccWebService
             else if (fundNo == "090")//家防服務參考
             {
                 DVGBCWebService.GBCWebService ws = new DVGBCWebService.GBCWebService();
-                string getGBCVisaDetail = ws.GetByPrimaryKey(accYear, acmWordNum, accKind, accCount);
+                string getGBCVisaDetail = ws.GetByPrimaryKey(accYear, acmWordNum, accKind, accCount, UnitNo);
                 return getGBCVisaDetail;
             }
             else if (fundNo == "100")//長照****尚未加入服務參考****
             {
                 LCGBCWebService.GBCWebService ws = new LCGBCWebService.GBCWebService();
-                string getGBCVisaDetail = ws.GetByPrimaryKey(accYear, acmWordNum, accKind, accCount);
+                string getGBCVisaDetail = ws.GetByPrimaryKey(accYear, acmWordNum, accKind, accCount, UnitNo);
                 return getGBCVisaDetail;
             }
             else if (fundNo == "110")//生產****尚未加入服務參考****
             {
                 BAGBCWebService.GBCWebService ws = new BAGBCWebService.GBCWebService();
-                string getGBCVisaDetail = ws.GetByPrimaryKey(accYear, acmWordNum, accKind, accCount);
+                string getGBCVisaDetail = ws.GetByPrimaryKey(accYear, acmWordNum, accKind, accCount, UnitNo);
                 return getGBCVisaDetail;
             }
             else
@@ -4339,7 +4563,7 @@ namespace AccWebService
         /// <param name="accKind"></param>
         /// <param name="batch"></param>
         /// <returns></returns>
-        public string GetByKind(string fundNo, string accYear, string accKind, string batch)
+        public string GetByKindForEstimate(string fundNo, string accYear, string accKind, string batch, string UnitNo)
         {
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateServerCertificate);
 
@@ -4376,22 +4600,22 @@ namespace AccWebService
             if (fundNo == "010")//醫發服務參考
             {
                 GBCWebService.GBCWebService ws = new GBCWebService.GBCWebService();
-                accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch));
+                accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch, UnitNo));
             }
             else if (fundNo == "090")//家防服務參考
             {
                 DVGBCWebService.GBCWebService ws = new DVGBCWebService.GBCWebService();
-                accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch));
+                accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch, UnitNo));
             }
             else if (fundNo == "100")//長照****尚未加入服務參考****
             {
                 LCGBCWebService.GBCWebService ws = new LCGBCWebService.GBCWebService();
-                accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch));
+                accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch, UnitNo));
             }
             else if (fundNo == "110")//生產****尚未加入服務參考****
             {
                 BAGBCWebService.GBCWebService ws = new BAGBCWebService.GBCWebService();
-                accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch));
+                accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch, UnitNo));
             }
             else
             {
@@ -4399,11 +4623,10 @@ namespace AccWebService
             }
 
             //將取回的JSON集合反序列化
-            foreach (var accDetailListItem in accDetailList)
+                foreach (var accDetailListItem in accDetailList)
             {
                 vwList.Add(JsonConvert.DeserializeObject<Vw_GBCVisaDetail>(accDetailListItem));
             }
-
             foreach (var vwListItem in vwList)
             {
                 vw_GBCVisaDetail.基金代碼 = vwListItem.基金代碼;
@@ -4465,13 +4688,13 @@ namespace AccWebService
 
             //Group估列應付資料借方(計畫-用途別)
             var EstimateGroup_D = from s1 in vwList
-                                  group s1 by new { s1.基金代碼, s1.PK_會計年度, s1.PK_種類, s1.F_用途別代碼, s1.F_計畫代碼 } into g
-                                  select new { 基金代碼 = g.Key.基金代碼, PK_會計年度 = g.Key.PK_會計年度, PK_種類 = g.Key.PK_種類, F_用途別代碼 = g.Key.F_用途別代碼, F_計畫代碼 = g.Key.F_計畫代碼, F_核定金額 = g.Sum(xxx => xxx.F_核定金額), F_摘要 = g.Max(x => x.F_摘要) };
+                                    group s1 by new { s1.基金代碼, s1.PK_會計年度, s1.PK_種類, s1.F_用途別代碼, s1.F_計畫代碼 } into g
+                                    select new { 基金代碼 = g.Key.基金代碼, PK_會計年度 = g.Key.PK_會計年度, PK_種類 = g.Key.PK_種類, F_用途別代碼 = g.Key.F_用途別代碼, F_計畫代碼 = g.Key.F_計畫代碼, F_核定金額 = g.Sum(xxx => xxx.F_核定金額), F_摘要 = g.Max(x => x.F_摘要) };
 
             //Group估列應付資料貸方(計畫)
             var EstimateGroup_C = from s1 in vwList
-                                  group s1 by new { s1.基金代碼, s1.PK_會計年度, s1.PK_種類, s1.F_計畫代碼 } into g
-                                  select new { 基金代碼 = g.Key.基金代碼, PK_會計年度 = g.Key.PK_會計年度, PK_種類 = g.Key.PK_種類, F_計畫代碼 = g.Key.F_計畫代碼, F_核定金額 = g.Sum(xxx => xxx.F_核定金額), F_摘要 = g.Max(x => x.F_摘要) };
+                                    group s1 by new { s1.基金代碼, s1.PK_會計年度, s1.PK_種類, s1.F_計畫代碼 } into g
+                                    select new { 基金代碼 = g.Key.基金代碼, PK_會計年度 = g.Key.PK_會計年度, PK_種類 = g.Key.PK_種類, F_計畫代碼 = g.Key.F_計畫代碼, F_核定金額 = g.Sum(xxx => xxx.F_核定金額), F_摘要 = g.Max(x => x.F_摘要) };
 
             foreach (var EstimateGroup_DItem in EstimateGroup_D)
             {
@@ -4603,8 +4826,61 @@ namespace AccWebService
             vouTop.明細號 = vw_GBCVisaDetail.PK_明細號;
             vouTop.傳票內容 = vouCollectionList;
 
-            return JsonConvert.SerializeObject(vouTop);
+            return JsonConvert.SerializeObject(vouTop);          
 
+        }
+
+        [WebMethod]
+        //查估列以外,例如估列收回、核銷收回、預撥收回
+        public List<string> GetByKind(string fundNo, string accYear, string accKind, string batch, string UnitNo)
+        {
+            ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateServerCertificate);
+            List<string> accDetailList = new List<string>();
+            List<string> result = new List<string>();
+
+            //先判斷基金代號
+            if (fundNo == "010")//醫發服務參考
+            {
+                GBCWebService.GBCWebService ws = new GBCWebService.GBCWebService();
+                accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch, UnitNo));
+            }
+            else if (fundNo == "090")//家防服務參考
+            {
+                DVGBCWebService.GBCWebService ws = new DVGBCWebService.GBCWebService();
+                accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch, UnitNo));
+            }
+            else if (fundNo == "100")//長照****尚未加入服務參考****
+            {
+                LCGBCWebService.GBCWebService ws = new LCGBCWebService.GBCWebService();
+                accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch, UnitNo));
+            }
+            else if (fundNo == "110")//生產****尚未加入服務參考****
+            {
+                BAGBCWebService.GBCWebService ws = new BAGBCWebService.GBCWebService();
+                accDetailList = new List<string>(ws.GetByKind(accYear, accKind, batch, UnitNo));
+            }
+            else
+            {
+                return null;
+            }
+
+            //條碼一樣只顯示一筆 避免重複開立明細
+            var accDetailListDistinct = (from s1 in accDetailList select s1).Distinct();
+
+            if (accKind != "估列")
+            {
+                foreach (var Barcode in accDetailListDistinct)
+                {
+                    result.Add(GetVw_GBCVisaDetail(fundNo, Barcode, accYear, UnitNo));
+                }
+            }
+
+            if (result.Count == 0)
+            {
+                result.Add("查無 " + accKind + " 資料");
+            }
+
+            return result;
         }
 
         [WebMethod]
@@ -4628,5 +4904,63 @@ namespace AccWebService
         }
 
         #endregion
+
+        protected string GetAbateVouNoPre(string fundNo, string AccYear, string SystemNo, string AccPayNo, string SystemNoDtl)
+        {
+            string abatePreVouNo = "";
+            //先判斷基金代號，到該資料庫取沖轉字號
+            if (fundNo == "010")//醫發服務參考
+            {
+                GBCWebService.GBCWebService ws = new GBCWebService.GBCWebService();
+                abatePreVouNo = ws.GetAbateVouNoForPrePay(AccYear, SystemNo, AccPayNo, SystemNoDtl);
+            }
+            else if (fundNo == "090")//家防服務參考
+            {
+                DVGBCWebService.GBCWebService ws = new DVGBCWebService.GBCWebService();
+                abatePreVouNo = ws.GetAbateVouNoForPrePay(AccYear, SystemNo, AccPayNo, SystemNoDtl);
+            }
+            else if (fundNo == "100")//長照
+            {
+                LCGBCWebService.GBCWebService ws = new LCGBCWebService.GBCWebService();
+                abatePreVouNo = ws.GetAbateVouNoForPrePay(AccYear, SystemNo, AccPayNo, SystemNoDtl);
+            }
+            else if (fundNo == "110")//生產
+            {
+                BAGBCWebService.GBCWebService ws = new BAGBCWebService.GBCWebService();
+                abatePreVouNo = ws.GetAbateVouNoForPrePay(AccYear, SystemNo, AccPayNo, SystemNoDtl);
+            }
+
+            return abatePreVouNo;
+        }
+
+        protected string GetAbateVouNoEst(string fundNo, string AccYear, string SystemNo, string AccPayNo, string SystemNoDtl)
+        {
+            string abateEstVouNo = "";
+
+            //先判斷基金代號，到該基金資料庫取沖轉字號
+            if (fundNo == "010")//醫發服務參考
+            {
+                GBCWebService.GBCWebService ws = new GBCWebService.GBCWebService();
+                abateEstVouNo = ws.GetAbateVouNoForEstimate(AccYear, SystemNo, AccPayNo, SystemNoDtl);
+            }
+            else if (fundNo == "090")//家防服務參考
+            {
+                DVGBCWebService.GBCWebService ws = new DVGBCWebService.GBCWebService();
+                abateEstVouNo = ws.GetAbateVouNoForEstimate(AccYear, SystemNo, AccPayNo, SystemNoDtl);
+            }
+            else if (fundNo == "100")//長照
+            {
+                LCGBCWebService.GBCWebService ws = new LCGBCWebService.GBCWebService();
+                abateEstVouNo = ws.GetAbateVouNoForEstimate(AccYear, SystemNo, AccPayNo, SystemNoDtl);
+            }
+            else if (fundNo == "110")//生產
+            {
+                BAGBCWebService.GBCWebService ws = new BAGBCWebService.GBCWebService();
+                abateEstVouNo = ws.GetAbateVouNoForEstimate(AccYear, SystemNo, AccPayNo, SystemNoDtl);
+            }
+
+            return abateEstVouNo;
+        }
+
     }
 }

@@ -21,6 +21,7 @@ namespace AccWebService.Model
         public string F_摘要 = string.Empty;
         public string F_製票日 = string.Empty;
         public string PK_次別 = string.Empty;
+        public string PK_系統號 = string.Empty;
         public string PK_明細號 = string.Empty;
         public string PK_動支編號 = string.Empty;
         public string PK_會計年度 = string.Empty;

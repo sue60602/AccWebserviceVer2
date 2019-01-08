@@ -35,6 +35,10 @@ namespace AccWebService.DVGBCWebService {
         
         private System.Threading.SendOrPostCallback FillVouNoEstimateOperationCompleted;
         
+        private System.Threading.SendOrPostCallback GetAbateVouNoForEstimateOperationCompleted;
+        
+        private System.Threading.SendOrPostCallback GetAbateVouNoForPrePayOperationCompleted;
+        
         private System.Threading.SendOrPostCallback GetYearOperationCompleted;
         
         private System.Threading.SendOrPostCallback GetAcmWordNumOperationCompleted;
@@ -97,6 +101,12 @@ namespace AccWebService.DVGBCWebService {
         public event FillVouNoEstimateCompletedEventHandler FillVouNoEstimateCompleted;
         
         /// <remarks/>
+        public event GetAbateVouNoForEstimateCompletedEventHandler GetAbateVouNoForEstimateCompleted;
+        
+        /// <remarks/>
+        public event GetAbateVouNoForPrePayCompletedEventHandler GetAbateVouNoForPrePayCompleted;
+        
+        /// <remarks/>
         public event GetYearCompletedEventHandler GetYearCompleted;
         
         /// <remarks/>
@@ -119,26 +129,28 @@ namespace AccWebService.DVGBCWebService {
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/GetVw_GBCVisaDetailJSON", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public string GetVw_GBCVisaDetailJSON(string AccYear, string acmWordNum) {
+        public string GetVw_GBCVisaDetailJSON(string AccYear, string acmWordNum, string UnitNo) {
             object[] results = this.Invoke("GetVw_GBCVisaDetailJSON", new object[] {
                         AccYear,
-                        acmWordNum});
+                        acmWordNum,
+                        UnitNo});
             return ((string)(results[0]));
         }
         
         /// <remarks/>
-        public void GetVw_GBCVisaDetailJSONAsync(string AccYear, string acmWordNum) {
-            this.GetVw_GBCVisaDetailJSONAsync(AccYear, acmWordNum, null);
+        public void GetVw_GBCVisaDetailJSONAsync(string AccYear, string acmWordNum, string UnitNo) {
+            this.GetVw_GBCVisaDetailJSONAsync(AccYear, acmWordNum, UnitNo, null);
         }
         
         /// <remarks/>
-        public void GetVw_GBCVisaDetailJSONAsync(string AccYear, string acmWordNum, object userState) {
+        public void GetVw_GBCVisaDetailJSONAsync(string AccYear, string acmWordNum, string UnitNo, object userState) {
             if ((this.GetVw_GBCVisaDetailJSONOperationCompleted == null)) {
                 this.GetVw_GBCVisaDetailJSONOperationCompleted = new System.Threading.SendOrPostCallback(this.OnGetVw_GBCVisaDetailJSONOperationCompleted);
             }
             this.InvokeAsync("GetVw_GBCVisaDetailJSON", new object[] {
                         AccYear,
-                        acmWordNum}, this.GetVw_GBCVisaDetailJSONOperationCompleted, userState);
+                        acmWordNum,
+                        UnitNo}, this.GetVw_GBCVisaDetailJSONOperationCompleted, userState);
         }
         
         private void OnGetVw_GBCVisaDetailJSONOperationCompleted(object arg) {
@@ -229,6 +241,76 @@ namespace AccWebService.DVGBCWebService {
         }
         
         /// <remarks/>
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/GetAbateVouNoForEstimate", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public string GetAbateVouNoForEstimate(string tsbYear, string tsbApplyNo, string tsbPayNo, string tsbDecideSeq) {
+            object[] results = this.Invoke("GetAbateVouNoForEstimate", new object[] {
+                        tsbYear,
+                        tsbApplyNo,
+                        tsbPayNo,
+                        tsbDecideSeq});
+            return ((string)(results[0]));
+        }
+        
+        /// <remarks/>
+        public void GetAbateVouNoForEstimateAsync(string tsbYear, string tsbApplyNo, string tsbPayNo, string tsbDecideSeq) {
+            this.GetAbateVouNoForEstimateAsync(tsbYear, tsbApplyNo, tsbPayNo, tsbDecideSeq, null);
+        }
+        
+        /// <remarks/>
+        public void GetAbateVouNoForEstimateAsync(string tsbYear, string tsbApplyNo, string tsbPayNo, string tsbDecideSeq, object userState) {
+            if ((this.GetAbateVouNoForEstimateOperationCompleted == null)) {
+                this.GetAbateVouNoForEstimateOperationCompleted = new System.Threading.SendOrPostCallback(this.OnGetAbateVouNoForEstimateOperationCompleted);
+            }
+            this.InvokeAsync("GetAbateVouNoForEstimate", new object[] {
+                        tsbYear,
+                        tsbApplyNo,
+                        tsbPayNo,
+                        tsbDecideSeq}, this.GetAbateVouNoForEstimateOperationCompleted, userState);
+        }
+        
+        private void OnGetAbateVouNoForEstimateOperationCompleted(object arg) {
+            if ((this.GetAbateVouNoForEstimateCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.GetAbateVouNoForEstimateCompleted(this, new GetAbateVouNoForEstimateCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/GetAbateVouNoForPrePay", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public string GetAbateVouNoForPrePay(string tsbYear, string tsbApplyNo, string tsbPayNo, string tsbDecideSeq) {
+            object[] results = this.Invoke("GetAbateVouNoForPrePay", new object[] {
+                        tsbYear,
+                        tsbApplyNo,
+                        tsbPayNo,
+                        tsbDecideSeq});
+            return ((string)(results[0]));
+        }
+        
+        /// <remarks/>
+        public void GetAbateVouNoForPrePayAsync(string tsbYear, string tsbApplyNo, string tsbPayNo, string tsbDecideSeq) {
+            this.GetAbateVouNoForPrePayAsync(tsbYear, tsbApplyNo, tsbPayNo, tsbDecideSeq, null);
+        }
+        
+        /// <remarks/>
+        public void GetAbateVouNoForPrePayAsync(string tsbYear, string tsbApplyNo, string tsbPayNo, string tsbDecideSeq, object userState) {
+            if ((this.GetAbateVouNoForPrePayOperationCompleted == null)) {
+                this.GetAbateVouNoForPrePayOperationCompleted = new System.Threading.SendOrPostCallback(this.OnGetAbateVouNoForPrePayOperationCompleted);
+            }
+            this.InvokeAsync("GetAbateVouNoForPrePay", new object[] {
+                        tsbYear,
+                        tsbApplyNo,
+                        tsbPayNo,
+                        tsbDecideSeq}, this.GetAbateVouNoForPrePayOperationCompleted, userState);
+        }
+        
+        private void OnGetAbateVouNoForPrePayOperationCompleted(object arg) {
+            if ((this.GetAbateVouNoForPrePayCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.GetAbateVouNoForPrePayCompleted(this, new GetAbateVouNoForPrePayCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/GetYear", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
         public string[] GetYear() {
             object[] results = this.Invoke("GetYear", new object[0]);
@@ -257,24 +339,26 @@ namespace AccWebService.DVGBCWebService {
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/GetAcmWordNum", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public string[] GetAcmWordNum(string accYear) {
+        public string[] GetAcmWordNum(string accYear, string UnitNo) {
             object[] results = this.Invoke("GetAcmWordNum", new object[] {
-                        accYear});
+                        accYear,
+                        UnitNo});
             return ((string[])(results[0]));
         }
         
         /// <remarks/>
-        public void GetAcmWordNumAsync(string accYear) {
-            this.GetAcmWordNumAsync(accYear, null);
+        public void GetAcmWordNumAsync(string accYear, string UnitNo) {
+            this.GetAcmWordNumAsync(accYear, UnitNo, null);
         }
         
         /// <remarks/>
-        public void GetAcmWordNumAsync(string accYear, object userState) {
+        public void GetAcmWordNumAsync(string accYear, string UnitNo, object userState) {
             if ((this.GetAcmWordNumOperationCompleted == null)) {
                 this.GetAcmWordNumOperationCompleted = new System.Threading.SendOrPostCallback(this.OnGetAcmWordNumOperationCompleted);
             }
             this.InvokeAsync("GetAcmWordNum", new object[] {
-                        accYear}, this.GetAcmWordNumOperationCompleted, userState);
+                        accYear,
+                        UnitNo}, this.GetAcmWordNumOperationCompleted, userState);
         }
         
         private void OnGetAcmWordNumOperationCompleted(object arg) {
@@ -286,26 +370,28 @@ namespace AccWebService.DVGBCWebService {
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/GetAccKind", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public string[] GetAccKind(string accYear, string acmWordNum) {
+        public string[] GetAccKind(string accYear, string acmWordNum, string UnitNo) {
             object[] results = this.Invoke("GetAccKind", new object[] {
                         accYear,
-                        acmWordNum});
+                        acmWordNum,
+                        UnitNo});
             return ((string[])(results[0]));
         }
         
         /// <remarks/>
-        public void GetAccKindAsync(string accYear, string acmWordNum) {
-            this.GetAccKindAsync(accYear, acmWordNum, null);
+        public void GetAccKindAsync(string accYear, string acmWordNum, string UnitNo) {
+            this.GetAccKindAsync(accYear, acmWordNum, UnitNo, null);
         }
         
         /// <remarks/>
-        public void GetAccKindAsync(string accYear, string acmWordNum, object userState) {
+        public void GetAccKindAsync(string accYear, string acmWordNum, string UnitNo, object userState) {
             if ((this.GetAccKindOperationCompleted == null)) {
                 this.GetAccKindOperationCompleted = new System.Threading.SendOrPostCallback(this.OnGetAccKindOperationCompleted);
             }
             this.InvokeAsync("GetAccKind", new object[] {
                         accYear,
-                        acmWordNum}, this.GetAccKindOperationCompleted, userState);
+                        acmWordNum,
+                        UnitNo}, this.GetAccKindOperationCompleted, userState);
         }
         
         private void OnGetAccKindOperationCompleted(object arg) {
@@ -317,28 +403,30 @@ namespace AccWebService.DVGBCWebService {
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/GetAccCount", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public string[] GetAccCount(string accYear, string acmWordNum, string accKind) {
+        public string[] GetAccCount(string accYear, string acmWordNum, string accKind, string UnitNo) {
             object[] results = this.Invoke("GetAccCount", new object[] {
                         accYear,
                         acmWordNum,
-                        accKind});
+                        accKind,
+                        UnitNo});
             return ((string[])(results[0]));
         }
         
         /// <remarks/>
-        public void GetAccCountAsync(string accYear, string acmWordNum, string accKind) {
-            this.GetAccCountAsync(accYear, acmWordNum, accKind, null);
+        public void GetAccCountAsync(string accYear, string acmWordNum, string accKind, string UnitNo) {
+            this.GetAccCountAsync(accYear, acmWordNum, accKind, UnitNo, null);
         }
         
         /// <remarks/>
-        public void GetAccCountAsync(string accYear, string acmWordNum, string accKind, object userState) {
+        public void GetAccCountAsync(string accYear, string acmWordNum, string accKind, string UnitNo, object userState) {
             if ((this.GetAccCountOperationCompleted == null)) {
                 this.GetAccCountOperationCompleted = new System.Threading.SendOrPostCallback(this.OnGetAccCountOperationCompleted);
             }
             this.InvokeAsync("GetAccCount", new object[] {
                         accYear,
                         acmWordNum,
-                        accKind}, this.GetAccCountOperationCompleted, userState);
+                        accKind,
+                        UnitNo}, this.GetAccCountOperationCompleted, userState);
         }
         
         private void OnGetAccCountOperationCompleted(object arg) {
@@ -350,22 +438,23 @@ namespace AccWebService.DVGBCWebService {
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/GetAccDetail", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public string[] GetAccDetail(string accYear, string acmWordNum, string accKind, string accCount) {
+        public string[] GetAccDetail(string accYear, string acmWordNum, string accKind, string accCount, string UnitNo) {
             object[] results = this.Invoke("GetAccDetail", new object[] {
                         accYear,
                         acmWordNum,
                         accKind,
-                        accCount});
+                        accCount,
+                        UnitNo});
             return ((string[])(results[0]));
         }
         
         /// <remarks/>
-        public void GetAccDetailAsync(string accYear, string acmWordNum, string accKind, string accCount) {
-            this.GetAccDetailAsync(accYear, acmWordNum, accKind, accCount, null);
+        public void GetAccDetailAsync(string accYear, string acmWordNum, string accKind, string accCount, string UnitNo) {
+            this.GetAccDetailAsync(accYear, acmWordNum, accKind, accCount, UnitNo, null);
         }
         
         /// <remarks/>
-        public void GetAccDetailAsync(string accYear, string acmWordNum, string accKind, string accCount, object userState) {
+        public void GetAccDetailAsync(string accYear, string acmWordNum, string accKind, string accCount, string UnitNo, object userState) {
             if ((this.GetAccDetailOperationCompleted == null)) {
                 this.GetAccDetailOperationCompleted = new System.Threading.SendOrPostCallback(this.OnGetAccDetailOperationCompleted);
             }
@@ -373,7 +462,8 @@ namespace AccWebService.DVGBCWebService {
                         accYear,
                         acmWordNum,
                         accKind,
-                        accCount}, this.GetAccDetailOperationCompleted, userState);
+                        accCount,
+                        UnitNo}, this.GetAccDetailOperationCompleted, userState);
         }
         
         private void OnGetAccDetailOperationCompleted(object arg) {
@@ -385,22 +475,23 @@ namespace AccWebService.DVGBCWebService {
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/GetByPrimaryKey", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public string GetByPrimaryKey(string accYear, string acmWordNum, string accKind, string accCount) {
+        public string GetByPrimaryKey(string accYear, string acmWordNum, string accKind, string accCount, string UnitNo) {
             object[] results = this.Invoke("GetByPrimaryKey", new object[] {
                         accYear,
                         acmWordNum,
                         accKind,
-                        accCount});
+                        accCount,
+                        UnitNo});
             return ((string)(results[0]));
         }
         
         /// <remarks/>
-        public void GetByPrimaryKeyAsync(string accYear, string acmWordNum, string accKind, string accCount) {
-            this.GetByPrimaryKeyAsync(accYear, acmWordNum, accKind, accCount, null);
+        public void GetByPrimaryKeyAsync(string accYear, string acmWordNum, string accKind, string accCount, string UnitNo) {
+            this.GetByPrimaryKeyAsync(accYear, acmWordNum, accKind, accCount, UnitNo, null);
         }
         
         /// <remarks/>
-        public void GetByPrimaryKeyAsync(string accYear, string acmWordNum, string accKind, string accCount, object userState) {
+        public void GetByPrimaryKeyAsync(string accYear, string acmWordNum, string accKind, string accCount, string UnitNo, object userState) {
             if ((this.GetByPrimaryKeyOperationCompleted == null)) {
                 this.GetByPrimaryKeyOperationCompleted = new System.Threading.SendOrPostCallback(this.OnGetByPrimaryKeyOperationCompleted);
             }
@@ -408,7 +499,8 @@ namespace AccWebService.DVGBCWebService {
                         accYear,
                         acmWordNum,
                         accKind,
-                        accCount}, this.GetByPrimaryKeyOperationCompleted, userState);
+                        accCount,
+                        UnitNo}, this.GetByPrimaryKeyOperationCompleted, userState);
         }
         
         private void OnGetByPrimaryKeyOperationCompleted(object arg) {
@@ -420,28 +512,30 @@ namespace AccWebService.DVGBCWebService {
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/GetByKind", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public string[] GetByKind(string accYear, string accKind, string batch) {
+        public string[] GetByKind(string accYear, string accKind, string batch, string UnitNo) {
             object[] results = this.Invoke("GetByKind", new object[] {
                         accYear,
                         accKind,
-                        batch});
+                        batch,
+                        UnitNo});
             return ((string[])(results[0]));
         }
         
         /// <remarks/>
-        public void GetByKindAsync(string accYear, string accKind, string batch) {
-            this.GetByKindAsync(accYear, accKind, batch, null);
+        public void GetByKindAsync(string accYear, string accKind, string batch, string UnitNo) {
+            this.GetByKindAsync(accYear, accKind, batch, UnitNo, null);
         }
         
         /// <remarks/>
-        public void GetByKindAsync(string accYear, string accKind, string batch, object userState) {
+        public void GetByKindAsync(string accYear, string accKind, string batch, string UnitNo, object userState) {
             if ((this.GetByKindOperationCompleted == null)) {
                 this.GetByKindOperationCompleted = new System.Threading.SendOrPostCallback(this.OnGetByKindOperationCompleted);
             }
             this.InvokeAsync("GetByKind", new object[] {
                         accYear,
                         accKind,
-                        batch}, this.GetByKindOperationCompleted, userState);
+                        batch,
+                        UnitNo}, this.GetByKindOperationCompleted, userState);
         }
         
         private void OnGetByKindOperationCompleted(object arg) {
@@ -535,6 +629,58 @@ namespace AccWebService.DVGBCWebService {
         private object[] results;
         
         internal FillVouNoEstimateCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
+                base(exception, cancelled, userState) {
+            this.results = results;
+        }
+        
+        /// <remarks/>
+        public string Result {
+            get {
+                this.RaiseExceptionIfNecessary();
+                return ((string)(this.results[0]));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
+    public delegate void GetAbateVouNoForEstimateCompletedEventHandler(object sender, GetAbateVouNoForEstimateCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class GetAbateVouNoForEstimateCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
+        
+        private object[] results;
+        
+        internal GetAbateVouNoForEstimateCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
+                base(exception, cancelled, userState) {
+            this.results = results;
+        }
+        
+        /// <remarks/>
+        public string Result {
+            get {
+                this.RaiseExceptionIfNecessary();
+                return ((string)(this.results[0]));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
+    public delegate void GetAbateVouNoForPrePayCompletedEventHandler(object sender, GetAbateVouNoForPrePayCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class GetAbateVouNoForPrePayCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
+        
+        private object[] results;
+        
+        internal GetAbateVouNoForPrePayCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
                 base(exception, cancelled, userState) {
             this.results = results;
         }

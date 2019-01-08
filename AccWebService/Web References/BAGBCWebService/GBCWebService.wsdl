@@ -7,6 +7,7 @@
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="AccYear" type="s:string" />
             <s:element minOccurs="0" maxOccurs="1" name="acmWordNum" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="UnitNo" type="s:string" />
           </s:sequence>
         </s:complexType>
       </s:element>
@@ -56,6 +57,40 @@
           </s:sequence>
         </s:complexType>
       </s:element>
+      <s:element name="GetAbateVouNoForEstimate">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="tsbYear" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="tsbApplyNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="tsbPayNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="tsbDecideSeq" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetAbateVouNoForEstimateResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetAbateVouNoForEstimateResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetAbateVouNoForPrePay">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="tsbYear" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="tsbApplyNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="tsbPayNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="tsbDecideSeq" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetAbateVouNoForPrePayResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetAbateVouNoForPrePayResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
       <s:element name="GetYear">
         <s:complexType />
       </s:element>
@@ -75,6 +110,7 @@
         <s:complexType>
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="accYear" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="UnitNo" type="s:string" />
           </s:sequence>
         </s:complexType>
       </s:element>
@@ -90,6 +126,7 @@
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="accYear" type="s:string" />
             <s:element minOccurs="0" maxOccurs="1" name="acmWordNum" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="UnitNo" type="s:string" />
           </s:sequence>
         </s:complexType>
       </s:element>
@@ -106,6 +143,7 @@
             <s:element minOccurs="0" maxOccurs="1" name="accYear" type="s:string" />
             <s:element minOccurs="0" maxOccurs="1" name="acmWordNum" type="s:string" />
             <s:element minOccurs="0" maxOccurs="1" name="accKind" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="UnitNo" type="s:string" />
           </s:sequence>
         </s:complexType>
       </s:element>
@@ -123,6 +161,7 @@
             <s:element minOccurs="0" maxOccurs="1" name="acmWordNum" type="s:string" />
             <s:element minOccurs="0" maxOccurs="1" name="accKind" type="s:string" />
             <s:element minOccurs="0" maxOccurs="1" name="accCount" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="UnitNo" type="s:string" />
           </s:sequence>
         </s:complexType>
       </s:element>
@@ -140,6 +179,7 @@
             <s:element minOccurs="0" maxOccurs="1" name="acmWordNum" type="s:string" />
             <s:element minOccurs="0" maxOccurs="1" name="accKind" type="s:string" />
             <s:element minOccurs="0" maxOccurs="1" name="accCount" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="UnitNo" type="s:string" />
           </s:sequence>
         </s:complexType>
       </s:element>
@@ -156,6 +196,7 @@
             <s:element minOccurs="0" maxOccurs="1" name="accYear" type="s:string" />
             <s:element minOccurs="0" maxOccurs="1" name="accKind" type="s:string" />
             <s:element minOccurs="0" maxOccurs="1" name="batch" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="UnitNo" type="s:string" />
           </s:sequence>
         </s:complexType>
       </s:element>
@@ -185,6 +226,18 @@
   </wsdl:message>
   <wsdl:message name="FillVouNoEstimateSoapOut">
     <wsdl:part name="parameters" element="tns:FillVouNoEstimateResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetAbateVouNoForEstimateSoapIn">
+    <wsdl:part name="parameters" element="tns:GetAbateVouNoForEstimate" />
+  </wsdl:message>
+  <wsdl:message name="GetAbateVouNoForEstimateSoapOut">
+    <wsdl:part name="parameters" element="tns:GetAbateVouNoForEstimateResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetAbateVouNoForPrePaySoapIn">
+    <wsdl:part name="parameters" element="tns:GetAbateVouNoForPrePay" />
+  </wsdl:message>
+  <wsdl:message name="GetAbateVouNoForPrePaySoapOut">
+    <wsdl:part name="parameters" element="tns:GetAbateVouNoForPrePayResponse" />
   </wsdl:message>
   <wsdl:message name="GetYearSoapIn">
     <wsdl:part name="parameters" element="tns:GetYear" />
@@ -241,6 +294,14 @@
       <wsdl:input message="tns:FillVouNoEstimateSoapIn" />
       <wsdl:output message="tns:FillVouNoEstimateSoapOut" />
     </wsdl:operation>
+    <wsdl:operation name="GetAbateVouNoForEstimate">
+      <wsdl:input message="tns:GetAbateVouNoForEstimateSoapIn" />
+      <wsdl:output message="tns:GetAbateVouNoForEstimateSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetAbateVouNoForPrePay">
+      <wsdl:input message="tns:GetAbateVouNoForPrePaySoapIn" />
+      <wsdl:output message="tns:GetAbateVouNoForPrePaySoapOut" />
+    </wsdl:operation>
     <wsdl:operation name="GetYear">
       <wsdl:input message="tns:GetYearSoapIn" />
       <wsdl:output message="tns:GetYearSoapOut" />
@@ -292,6 +353,24 @@
     </wsdl:operation>
     <wsdl:operation name="FillVouNoEstimate">
       <soap:operation soapAction="http://tempuri.org/FillVouNoEstimate" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetAbateVouNoForEstimate">
+      <soap:operation soapAction="http://tempuri.org/GetAbateVouNoForEstimate" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetAbateVouNoForPrePay">
+      <soap:operation soapAction="http://tempuri.org/GetAbateVouNoForPrePay" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>
@@ -385,6 +464,24 @@
     </wsdl:operation>
     <wsdl:operation name="FillVouNoEstimate">
       <soap12:operation soapAction="http://tempuri.org/FillVouNoEstimate" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetAbateVouNoForEstimate">
+      <soap12:operation soapAction="http://tempuri.org/GetAbateVouNoForEstimate" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetAbateVouNoForPrePay">
+      <soap12:operation soapAction="http://tempuri.org/GetAbateVouNoForPrePay" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>

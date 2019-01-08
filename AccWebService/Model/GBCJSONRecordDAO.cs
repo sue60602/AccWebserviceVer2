@@ -114,7 +114,16 @@ namespace AccWebService.Model
             gbcJSONRecord.接收時間 = DateTime.Now;
 
             db.GBCJSONRecordLog.Add(gbcJSONRecord);
-            db.SaveChanges();
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+            
         }
 
         /// <summary>

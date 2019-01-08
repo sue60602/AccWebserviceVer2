@@ -102,6 +102,20 @@
           </s:sequence>
         </s:complexType>
       </s:element>
+      <s:element name="DeleteVouDataFromNPSF">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="VouDataJSON" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="DeleteVouDataFromNPSFResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="DeleteVouDataFromNPSFResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
     </s:schema>
   </wsdl:types>
   <wsdl:message name="GetAccKindSoapIn">
@@ -140,6 +154,12 @@
   <wsdl:message name="InsertVouDataFromNPSFSoapOut">
     <wsdl:part name="parameters" element="tns:InsertVouDataFromNPSFResponse" />
   </wsdl:message>
+  <wsdl:message name="DeleteVouDataFromNPSFSoapIn">
+    <wsdl:part name="parameters" element="tns:DeleteVouDataFromNPSF" />
+  </wsdl:message>
+  <wsdl:message name="DeleteVouDataFromNPSFSoapOut">
+    <wsdl:part name="parameters" element="tns:DeleteVouDataFromNPSFResponse" />
+  </wsdl:message>
   <wsdl:portType name="HPAGBCWebServiceSoap">
     <wsdl:operation name="GetAccKind">
       <wsdl:input message="tns:GetAccKindSoapIn" />
@@ -164,6 +184,10 @@
     <wsdl:operation name="InsertVouDataFromNPSF">
       <wsdl:input message="tns:InsertVouDataFromNPSFSoapIn" />
       <wsdl:output message="tns:InsertVouDataFromNPSFSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="DeleteVouDataFromNPSF">
+      <wsdl:input message="tns:DeleteVouDataFromNPSFSoapIn" />
+      <wsdl:output message="tns:DeleteVouDataFromNPSFSoapOut" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="HPAGBCWebServiceSoap" type="tns:HPAGBCWebServiceSoap">
@@ -222,6 +246,15 @@
         <soap:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
+    <wsdl:operation name="DeleteVouDataFromNPSF">
+      <soap:operation soapAction="http://tempuri.org/DeleteVouDataFromNPSF" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
   </wsdl:binding>
   <wsdl:binding name="HPAGBCWebServiceSoap12" type="tns:HPAGBCWebServiceSoap">
     <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
@@ -272,6 +305,15 @@
     </wsdl:operation>
     <wsdl:operation name="InsertVouDataFromNPSF">
       <soap12:operation soapAction="http://tempuri.org/InsertVouDataFromNPSF" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DeleteVouDataFromNPSF">
+      <soap12:operation soapAction="http://tempuri.org/DeleteVouDataFromNPSF" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>

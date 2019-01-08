@@ -41,6 +41,8 @@ namespace AccWebService.HPAGBCWebService {
         
         private System.Threading.SendOrPostCallback InsertVouDataFromNPSFOperationCompleted;
         
+        private System.Threading.SendOrPostCallback DeleteVouDataFromNPSFOperationCompleted;
+        
         private bool useDefaultCredentialsSetExplicitly;
         
         /// <remarks/>
@@ -96,6 +98,9 @@ namespace AccWebService.HPAGBCWebService {
         
         /// <remarks/>
         public event InsertVouDataFromNPSFCompletedEventHandler InsertVouDataFromNPSFCompleted;
+        
+        /// <remarks/>
+        public event DeleteVouDataFromNPSFCompletedEventHandler DeleteVouDataFromNPSFCompleted;
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/GetAccKind", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
@@ -304,6 +309,35 @@ namespace AccWebService.HPAGBCWebService {
         }
         
         /// <remarks/>
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/DeleteVouDataFromNPSF", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public string DeleteVouDataFromNPSF(string VouDataJSON) {
+            object[] results = this.Invoke("DeleteVouDataFromNPSF", new object[] {
+                        VouDataJSON});
+            return ((string)(results[0]));
+        }
+        
+        /// <remarks/>
+        public void DeleteVouDataFromNPSFAsync(string VouDataJSON) {
+            this.DeleteVouDataFromNPSFAsync(VouDataJSON, null);
+        }
+        
+        /// <remarks/>
+        public void DeleteVouDataFromNPSFAsync(string VouDataJSON, object userState) {
+            if ((this.DeleteVouDataFromNPSFOperationCompleted == null)) {
+                this.DeleteVouDataFromNPSFOperationCompleted = new System.Threading.SendOrPostCallback(this.OnDeleteVouDataFromNPSFOperationCompleted);
+            }
+            this.InvokeAsync("DeleteVouDataFromNPSF", new object[] {
+                        VouDataJSON}, this.DeleteVouDataFromNPSFOperationCompleted, userState);
+        }
+        
+        private void OnDeleteVouDataFromNPSFOperationCompleted(object arg) {
+            if ((this.DeleteVouDataFromNPSFCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.DeleteVouDataFromNPSFCompleted(this, new DeleteVouDataFromNPSFCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
         public new void CancelAsync(object userState) {
             base.CancelAsync(userState);
         }
@@ -465,6 +499,32 @@ namespace AccWebService.HPAGBCWebService {
         private object[] results;
         
         internal InsertVouDataFromNPSFCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
+                base(exception, cancelled, userState) {
+            this.results = results;
+        }
+        
+        /// <remarks/>
+        public string Result {
+            get {
+                this.RaiseExceptionIfNecessary();
+                return ((string)(this.results[0]));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
+    public delegate void DeleteVouDataFromNPSFCompletedEventHandler(object sender, DeleteVouDataFromNPSFCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.3056.0")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class DeleteVouDataFromNPSFCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
+        
+        private object[] results;
+        
+        internal DeleteVouDataFromNPSFCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
                 base(exception, cancelled, userState) {
             this.results = results;
         }

@@ -429,7 +429,7 @@
           <Property Name="BudgetNum" Type="int" />
           <Property Name="ActualNum" Type="int" />
           <Property Name="CompareNum" Type="int" />
-          <Property Name="Statement" Type="nvarchar" MaxLength="200" />
+          <Property Name="Statement" Type="nvarchar" MaxLength="1000" />
         </EntityType>
         <EntityType Name="ExpenseUsage">
           <Key>
@@ -620,7 +620,7 @@
           <Property Name="AccYear" Type="varchar" MaxLength="4" Nullable="false" />
           <Property Name="ReportName" Type="nvarchar" MaxLength="30" Nullable="false" />
           <Property Name="OrderNo" Type="int" Nullable="false" />
-          <Property Name="ReportContent" Type="nvarchar" MaxLength="500" />
+          <Property Name="ReportContent" Type="nvarchar" MaxLength="1000" />
           <Property Name="Statement" Type="nvarchar" MaxLength="500" />
         </EntityType>
         <EntityType Name="FinalReportRecord_Adjust">
@@ -634,7 +634,7 @@
           <Property Name="AccYear" Type="varchar" MaxLength="4" Nullable="false" />
           <Property Name="ReportName" Type="nvarchar" MaxLength="30" Nullable="false" />
           <Property Name="OrderNo" Type="int" Nullable="false" />
-          <Property Name="ReportContent" Type="nvarchar" MaxLength="500" />
+          <Property Name="ReportContent" Type="nvarchar" MaxLength="1000" />
           <Property Name="Statement" Type="nvarchar" MaxLength="500" />
         </EntityType>
         <EntityType Name="FinalReportRecord_Certify">
@@ -648,7 +648,7 @@
           <Property Name="AccYear" Type="varchar" MaxLength="4" Nullable="false" />
           <Property Name="ReportName" Type="nvarchar" MaxLength="30" Nullable="false" />
           <Property Name="OrderNo" Type="int" Nullable="false" />
-          <Property Name="ReportContent" Type="nvarchar" MaxLength="500" />
+          <Property Name="ReportContent" Type="nvarchar" MaxLength="1000" />
           <Property Name="Statement" Type="nvarchar" MaxLength="500" />
         </EntityType>
         <EntityType Name="FinalSummaryAdjustMain">
@@ -791,7 +791,7 @@
           </Key>
           <Property Name="systemNo" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="基金代碼" Type="varchar" MaxLength="3" Nullable="false" />
-          <Property Name="條碼" Type="varchar" MaxLength="20" Nullable="false" />
+          <Property Name="條碼" Type="varchar" MaxLength="30" />
           <Property Name="JSON紀錄" Type="nvarchar(max)" Nullable="false" />
           <Property Name="接收時間" Type="datetime" Nullable="false" />
         </EntityType>
@@ -837,7 +837,7 @@
           </Key>
           <Property Name="基金代碼" Type="varchar" MaxLength="3" Nullable="false" />
           <Property Name="PK_會計年度" Type="varchar" MaxLength="3" Nullable="false" />
-          <Property Name="PK_動支編號" Type="varchar" MaxLength="20" Nullable="false" />
+          <Property Name="PK_動支編號" Type="varchar" MaxLength="30" Nullable="false" />
           <Property Name="PK_種類" Type="varchar" MaxLength="10" Nullable="false" />
           <Property Name="PK_次別" Type="varchar" MaxLength="10" Nullable="false" />
           <Property Name="PK_明細號" Type="varchar" MaxLength="20" Nullable="false" />
@@ -1098,7 +1098,7 @@
           <Property Name="YearMonth" Type="varchar" MaxLength="6" Nullable="false" />
           <Property Name="ReportName" Type="nvarchar" MaxLength="30" Nullable="false" />
           <Property Name="OrderNo" Type="int" Nullable="false" />
-          <Property Name="ReportContent" Type="nvarchar" MaxLength="500" />
+          <Property Name="ReportContent" Type="nvarchar" MaxLength="1000" />
           <Property Name="Statement" Type="nvarchar" MaxLength="500" />
         </EntityType>
         <EntityType Name="MonthlySummaryMain">
@@ -1938,7 +1938,7 @@
           <Property Name="PkindNo" Type="varchar" MaxLength="10" />
           <Property Name="CertNo" Type="varchar" MaxLength="200" />
           <Property Name="CertNum" Type="int" />
-          <Property Name="RelatedVouNo" Type="varchar" MaxLength="20" />
+          <Property Name="RelatedVouNo" Type="varchar" MaxLength="50" />
           <Property Name="ToWardCode" Type="varchar" MaxLength="20" />
           <Property Name="ToWardDesc" Type="nvarchar" MaxLength="100" />
           <Property Name="BudgetSource" Type="nvarchar" MaxLength="10" />
@@ -2743,7 +2743,7 @@
           <Property Name="BudgetNum" Type="Int32" />
           <Property Name="ActualNum" Type="Int32" />
           <Property Name="CompareNum" Type="Int32" />
-          <Property Name="Statement" Type="String" MaxLength="200" FixedLength="false" Unicode="true" />
+          <Property Name="Statement" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="ExpenseUsage">
           <Key>
@@ -2934,7 +2934,7 @@
           <Property Name="AccYear" Type="String" MaxLength="4" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="ReportName" Type="String" MaxLength="30" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="OrderNo" Type="Int32" Nullable="false" />
-          <Property Name="ReportContent" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="ReportContent" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
           <Property Name="Statement" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="FinalReportRecord_Adjust">
@@ -2948,7 +2948,7 @@
           <Property Name="AccYear" Type="String" MaxLength="4" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="ReportName" Type="String" MaxLength="30" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="OrderNo" Type="Int32" Nullable="false" />
-          <Property Name="ReportContent" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="ReportContent" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
           <Property Name="Statement" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="FinalReportRecord_Certify">
@@ -2962,7 +2962,7 @@
           <Property Name="AccYear" Type="String" MaxLength="4" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="ReportName" Type="String" MaxLength="30" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="OrderNo" Type="Int32" Nullable="false" />
-          <Property Name="ReportContent" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="ReportContent" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
           <Property Name="Statement" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="FinalSummaryAdjustMain">
@@ -3141,7 +3141,7 @@
           </Key>
           <Property Name="基金代碼" Type="String" MaxLength="3" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="PK_會計年度" Type="String" MaxLength="3" FixedLength="false" Unicode="false" Nullable="false" />
-          <Property Name="PK_動支編號" Type="String" MaxLength="20" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="PK_動支編號" Type="String" MaxLength="30" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="PK_種類" Type="String" MaxLength="10" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="PK_次別" Type="String" MaxLength="10" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="PK_明細號" Type="String" MaxLength="20" FixedLength="false" Unicode="false" Nullable="false" />
@@ -3402,7 +3402,7 @@
           <Property Name="YearMonth" Type="String" MaxLength="6" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="ReportName" Type="String" MaxLength="30" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="OrderNo" Type="Int32" Nullable="false" />
-          <Property Name="ReportContent" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="ReportContent" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
           <Property Name="Statement" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="MonthlySummaryMain">
@@ -4242,7 +4242,7 @@
           <Property Name="PkindNo" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
           <Property Name="CertNo" Type="String" MaxLength="200" FixedLength="false" Unicode="false" />
           <Property Name="CertNum" Type="Int32" />
-          <Property Name="RelatedVouNo" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="RelatedVouNo" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="ToWardCode" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
           <Property Name="ToWardDesc" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
           <Property Name="BudgetSource" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
@@ -4625,7 +4625,7 @@
           </Key>
           <Property Name="systemNo" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="基金代碼" Type="String" Nullable="false" MaxLength="3" FixedLength="false" Unicode="false" />
-          <Property Name="條碼" Type="String" Nullable="false" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="條碼" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
           <Property Name="JSON紀錄" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="接收時間" Type="DateTime" Nullable="false" Precision="3" />
         </EntityType>
